@@ -1,3 +1,32 @@
 {
-  "extends": "@react-native/typescript-config/tsconfig.json"
+  "extends": "@react-native/typescript-config/tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react",
+    /* Visit https://aka.ms/tsconfig.json to read more about this file */
+    "allowJs": true,
+    /* Completeness */
+    "skipLibCheck": false /* Skip type checking all .d.ts files. */,
+    "baseUrl": ".",
+    "paths": {
+      "@assets": ["./src/assets"],
+      "@assets/*": ["./src/assets/*"],
+      "@components": ["./src/components"],
+      "@components/*": ["./src/components/*"],
+      "@helpers": ["./src/helpers"],
+      "@helpers/*": ["./src/helpers/*"],
+      "@navigation": ["./src/navigation"],
+      "@navigation/*": ["./src/navigation/*"],
+      "@screens": ["./src/screens"],
+      "@screens/*": ["./src/screens/*"],
+      "@store": ["./src/store"],
+      "@store/*": ["./src/store/*"],
+      "@theme": ["./src/theme"],
+      "@theme/*": ["./src/theme/*"],
+      "@theme/wrappers": ["./src/theme/wrappers"],
+      "@theme/wrappers/*": ["./src/theme/wrappers/*"],
+      "@translations": ["./src/translations"],
+      "@translations/*": ["./src/translations/*"]
+    }
+  },
+  "exclude": ["src/assets/icons/svgs/*"]
 }

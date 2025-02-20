@@ -16,7 +16,14 @@ end
 
 target 'VLV' do
   config = use_native_modules!
-
+  rn_maps_path = '../node_modules/react-native-maps'
+  pod 'react-native-google-maps', :path => rn_maps_path
+  pod 'Firebase', :modular_headers => true
+  pod 'FirebaseCore', :modular_headers => true
+  pod 'GoogleUtilities', :modular_headers => true
+  pod 'GoogleMaps'
+  pod 'Google-Maps-iOS-Utils'
+  
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
