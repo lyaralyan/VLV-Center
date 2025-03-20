@@ -15,7 +15,6 @@ import FeatureCategories from './components/FeatureCategories';
 import TreeInOne from './components/TreeInOne';
 import BuyTwoGetOneGift from './components/BuyTwoGetOneGift';
 import {RH, RW} from '@theme/utils';
-// import SearchInput from './components/SearchInputNew/SearchInput';
 import SearchInput from './components/SearchInputNew/SearchInput';
 
 const Home = () => {
@@ -68,7 +67,7 @@ const Home = () => {
         />
         <GridProducts
           scrollRef={scrollRef}
-          products={topRatingProduct}
+          products={{products: topRatingProduct}}
           title={t('new_products')}
         />
         {buyTwoGetOneGift === null ? null : <BuyTwoGetOneGift />}
@@ -77,7 +76,7 @@ const Home = () => {
         )}
         <Brands />
         <Footer />
-        <View style={{height: 130}} />
+        <View style={styles.empty} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -88,5 +87,8 @@ export default Home;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  empty: {
+    height: 130,
   },
 });

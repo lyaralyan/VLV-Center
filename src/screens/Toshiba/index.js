@@ -19,17 +19,19 @@ const screenWidth = Dimensions.get('screen').width;
 
 const Toshiba = () => {
   const {toshiba, currentLanguage} = useSelector(({main}) => main);
+  const {t} = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const dispatch = useDispatch();
   useEffect(() => {
     if (!Object.keys(toshiba || {}).length) {
       dispatch(getBrandPageData('toshiba'));
     }
-  }, [toshiba]);
-  const {t} = useTranslation();
-  const insets = useSafeAreaInsets();
+  }, [dispatch, toshiba]);
 
-  if (!Object.keys(toshiba || {}).length) return null;
+  if (!Object.keys(toshiba || {}).length) {
+    return null;
+  }
   return (
     <ScrollView
       style={[styles.container, {paddingTop: insets.top}]}
@@ -89,7 +91,7 @@ const Toshiba = () => {
           url={toshiba?.baners?.['baner_5_' + currentLanguage]}
         />
       </View>
-      <GridProducts products={toshiba?.products_second_slider} />
+      <GridProducts products={{products: toshiba?.products_second_slider}} />
       <View style={styles.wrapper}>
         <RenderHTML
           contentWidth={screenWidth}

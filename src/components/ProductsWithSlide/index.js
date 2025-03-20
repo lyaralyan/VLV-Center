@@ -35,13 +35,15 @@ export default function ProductsWithSlide({
           marginBottom: RH(10),
         }}
         showsHorizontalScrollIndicator={false}
-        renderItem={({item}) => (
-          <ProductCard
-            product={item}
-            singleImage={true}
-            onPressAddCart={onPressAddCart}
-          />
-        )}
+        renderItem={({item}) => {
+          return (
+            <ProductCard
+              product={item}
+              // singleImage={true}
+              onPressAddCart={onPressAddCart}
+            />
+          );
+        }}
       />
     </View>
   );

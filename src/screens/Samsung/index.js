@@ -17,6 +17,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 const screenWidth = Dimensions.get('screen').width;
 const Samsung = () => {
   const {samsung, currentLanguage} = useSelector(({main}) => main);
+  const insets = useSafeAreaInsets();
 
   const {t} = useTranslation();
   const dispatch = useDispatch();
@@ -24,10 +25,11 @@ const Samsung = () => {
     if (!Object.keys(samsung || {}).length) {
       dispatch(getBrandPageData('samsung'));
     }
-  }, [samsung]);
-  const insets = useSafeAreaInsets();
+  }, [dispatch, samsung]);
 
-  if (!Object.keys(samsung || {}).length) return null;
+  if (!Object.keys(samsung || {}).length) {
+    return null;
+  }
   return (
     <ScrollView
       style={[styles.container, {paddingTop: insets.top}]}
@@ -92,7 +94,7 @@ const Samsung = () => {
         />
       </View>
 
-      <GridProducts products={samsung?.products_last_slider} />
+      <GridProducts products={{products: samsung?.products_last_slider}} />
       <View style={styles.wrapper}>
         <RenderHTML
           contentWidth={screenWidth}

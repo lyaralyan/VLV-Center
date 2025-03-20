@@ -39,7 +39,7 @@ const filterSlice = createSlice({
       if (exists) {
         // Remove the brand if it's already in the state
         state.brand = state.brand.filter(b => b?.id !== brand?.id);
-      } else if (brand === null) {
+      } else if (brand === null || brand === undefined) {
         state.brand = [];
       } else {
         // Add the brand to the state

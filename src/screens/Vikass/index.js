@@ -18,11 +18,12 @@ import BrandPageCategories from '@components/BrandPageCategories';
 import Image from '@components/Image';
 import GridProducts from '../../components/GridProducts/index';
 import Row from '@theme/wrappers/row';
-import {getSearchPageInfo} from '@store/SearchPageSlice';
 import {useNavigation} from '@react-navigation/native';
-import {getBrandPageData, setInnerPending} from '@store/MainSlice';
+import {getBrandPageData} from '@store/MainSlice';
 import Colors from '@theme/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {getCategoryWithSlugRequest} from '@screens/Home/components/SearchInputNew/request/getCategoryWithSlugSlice';
+import {setBrand} from '@screens/Home/components/SearchInputNew/request/filterSlice';
 
 const screenWidth = Dimensions.get('screen').width;
 
@@ -31,16 +32,18 @@ const Vikass = () => {
   const {vikass, currentLanguage} = useSelector(({main}) => main);
   const dispatch = useDispatch();
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (!Object.keys(vikass || {}).length) {
       dispatch(getBrandPageData('vikass'));
     }
     setActiveId(vikass?.categories3?.[0]?.id);
-  }, [vikass]);
-  const insets = useSafeAreaInsets();
+  }, [dispatch, vikass]);
 
-  if (!Object.keys(vikass || {}).length) return null;
+  if (!Object.keys(vikass || {}).length) {
+    return null;
+  }
 
   return (
     <ScrollView
@@ -82,23 +85,34 @@ const Vikass = () => {
       <BrandPageCategories
         data={vikass?.categories1}
         onPress={item => {
-          dispatch(setInnerPending(true));
+          dispatch(setBrand(vikass?.brand));
           dispatch(
-            getSearchPageInfo({
-              slug: item?.slug,
-              params: {
-                b: [vikass?.brand?.id],
-              },
-              navigation,
-              category: true,
+            getCategoryWithSlugRequest({
+              slug: item.slug,
+              brand: [vikass?.brand],
+              manufacture: [],
             }),
           );
+          navigation.navigate('CategoryPage');
         }}
       />
       <View style={styles.wrapper}>
         <View style={styles.categoriesContainer}>
           {vikass?.categories2.map((item, index) => (
-            <Pressable style={styles.category} key={index}>
+            <Pressable
+              style={styles.category}
+              key={index}
+              onPress={() => {
+                dispatch(setBrand(vikass?.brand));
+                dispatch(
+                  getCategoryWithSlugRequest({
+                    slug: item.slug,
+                    brand: [vikass?.brand],
+                    manufacture: [],
+                  }),
+                );
+                navigation.navigate('CategoryPage');
+              }}>
               <Text allowFontScaling={false} style={styles.categoryText}>
                 {item?.['name_' + currentLanguage]}
               </Text>
@@ -127,9 +141,11 @@ const Vikass = () => {
         activeId={activeId}
       />
       <GridProducts
-        products={vikass.products_slider.filter(
-          item => item.product.categories[0].id === activeId,
-        )}
+        products={{
+          products: vikass.products_slider.filter(
+            item => item.product.categories[0].id === activeId,
+          ),
+        }}
       />
       <View style={styles.wrapper}>
         <Row>

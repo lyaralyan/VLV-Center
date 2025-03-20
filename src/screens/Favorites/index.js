@@ -16,33 +16,33 @@ import {useTranslation} from 'react-i18next';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const Favorites = () => {
-  const {favoritesPageproducts} = useSelector(({cart}) => cart);
   const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(getFavoritesPageproducts());
-  }, []);
   const insets = useSafeAreaInsets();
   const {t} = useTranslation();
+  const {favoritesPageproducts} = useSelector(({cart}) => cart);
+
+  useEffect(() => {
+    dispatch(getFavoritesPageproducts());
+  }, [dispatch]);
+
   return (
-    <View style={{flex: 1, paddingTop: insets.top}}>
+    <View style={{...{flex: 1, paddingTop: insets.top}}}>
       <Header title={t('Favorites')} />
 
       {favoritesPageproducts?.length ? (
         <GridProducts
-          products={favoritesPageproducts}
-          containerStyle={{backgroundColor: '#fff'}}
-          contentContainerStyle={{
-            backgroundColor: '#fff',
-            paddingBottom: RH(100),
-          }}
+          products={{products: favoritesPageproducts}}
+          containerStyle={styles.containerStyle}
+          contentContainerStyle={styles.contentContainerStyle}
           scrollEnabled={true}
-          onDeletePress={product => {
+          onDeletePress={async product => {
             dispatch(removeFavorites(product?.seller_product_id));
             dispatch(
               addWishList({
                 seller_product_id: product?.seller_product_id,
               }),
             );
+
             let filteredData = favoritesPageproducts.filter(
               ({seller_product_sku_id}) =>
                 seller_product_sku_id !== product?.seller_product_sku_id,
@@ -75,5 +75,12 @@ const styles = StyleSheet.create({
     ...font('medium', 16),
     textTransform: 'uppercase',
     marginTop: RH(20),
+  },
+  contentContainerStyle: {
+    backgroundColor: '#fff',
+    paddingBottom: RH(100),
+  },
+  containerStyle: {
+    backgroundColor: '#fff',
   },
 });

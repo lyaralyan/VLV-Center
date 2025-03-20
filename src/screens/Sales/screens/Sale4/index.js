@@ -31,7 +31,7 @@ const Sale4 = props => {
   const {salePage, currentLanguage} = useSelector(({main}) => main);
   const {products, sortType} = useSelector(({searchSlice}) => searchSlice);
   let saleId = props.route.params.id;
-
+  const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -49,12 +49,11 @@ const Sale4 = props => {
     if (searchPageProducts?.length) {
       sortedProducts = sortFunction(sortType, searchPageProducts);
     }
-  }, [sortType, searchPageProducts]);
+  }, [sortType, dispatch]);
 
   useEffect(() => {
     setRender(!render);
   }, [sortedProducts]);
-  const insets = useSafeAreaInsets();
 
   return (
     <ScrollView
@@ -71,7 +70,7 @@ const Sale4 = props => {
               if (!salePage?.sale?.baner_gl_navigate_params) {
                 return null;
               }
-              dispatch(setPending(true));
+
               dispatch(
                 getSearchPageInfo({
                   ...salePage?.sale?.baner_gl_navigate_params,

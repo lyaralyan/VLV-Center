@@ -1,4 +1,4 @@
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import React, {useEffect} from 'react';
 import HaedaerCategoryItem from '../../components/HeaderCategories/components/HaedaerCategoryItem';
 import Banners from '../Home/components/Banners';
@@ -7,7 +7,7 @@ import {RH, RW} from '../../theme/utils';
 import {useDispatch, useSelector} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import {FlatList, ScrollView} from 'react-native-gesture-handler';
-import {getCatalogPageData, setPending} from '../../store/MainSlice';
+import {getCatalogPageData} from '../../store/MainSlice';
 import GridProducts from '../../components/GridProducts';
 import Header from '@components/Header';
 import SearchInput from '@screens/Home/components/SearchInputNew/SearchInput';
@@ -22,12 +22,16 @@ const CatalogPage = props => {
   const {t} = useTranslation();
   const dispatch = useDispatch();
   const slug = props.route.params?.slug;
+
   useEffect(() => {
     dispatch(getCatalogPageData(slug));
-  }, [slug]);
+  }, [dispatch, slug]);
+
   const insets = useSafeAreaInsets();
 
-  if (!Object.keys(catalogPageData || {}).length) return null;
+  if (!Object.keys(catalogPageData || {}).length) {
+    return null;
+  }
   return (
     <ScrollView style={[styles.container, {paddingTop: insets.top}]}>
       <Header />
@@ -93,7 +97,7 @@ const CatalogPage = props => {
         <Brands data={catalogPageData?.brands} />
       )}
 
-      <View style={{height: 130}} />
+      <View style={styles.empty} />
     </ScrollView>
   );
 };
@@ -111,5 +115,8 @@ const styles = StyleSheet.create({
   headerCategories: {
     paddingHorizontal: RW(11),
     marginTop: RH(15),
+  },
+  empty: {
+    height: 130,
   },
 });

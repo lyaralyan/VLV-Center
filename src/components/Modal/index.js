@@ -1,6 +1,7 @@
 import {Modal, Pressable, StyleSheet, View} from 'react-native';
 import React from 'react';
 import Toast from 'react-native-toast-message';
+
 const CustomModal = props => {
   return (
     <View>
@@ -11,7 +12,7 @@ const CustomModal = props => {
         onRequestClose={props.dismiss}>
         <Pressable style={styles.modalContainer} onPress={props.dismiss}>
           <View style={styles.modalOverlay} />
-          <Pressable activeOpacity={1}>{props.children}</Pressable>
+          <View>{props.children}</View>
           <Toast />
         </Pressable>
       </Modal>

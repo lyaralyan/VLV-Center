@@ -1,9 +1,9 @@
 import {Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
-import React from 'react';
-import {useSelector} from 'react-redux';
+import React, {useCallback} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
 import BackArrowSvg from '@assets/SVG/BackArrowSvg';
 import {RH, RW, font} from '@theme/utils';
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import Filter from '../../components/Filter';
 import GridProducts from '@components/GridProducts';
 import {SvgUri} from 'react-native-svg';
@@ -13,14 +13,35 @@ import Row from '@theme/wrappers/row';
 import FeatureCategories from '@screens/Home/components/FeatureCategories';
 import Colors from '@theme/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+// import {clearFilterData} from '@screens/Home/components/SearchInputNew/request/getCategoryWithSlugSlice';
+import {clearSearchData} from '@screens/Home/components/SearchInputNew/request/searchSlice';
+import {setMaxPrice, setMinPrice} from '@store/SearchPageSlice';
+import {clearSelectedFilters} from '@screens/Home/components/SearchInputNew/request/filterSlice';
 
 const CategoryPage = () => {
   const currentLanguage = useSelector(({main}) => main.currentLanguage);
   const insets = useSafeAreaInsets();
+  const dispatch = useDispatch();
   const {subCategories} = useSelector(({searchSlice}) => searchSlice);
   const navigation = useNavigation();
   const {getCategoryWithSlugData} = useSelector(
     ({getCategoryWithSlugSlice}) => getCategoryWithSlugSlice,
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      console.info('📢 Screen Focused');
+
+      return () => {
+        console.info('📢 Screen Unfocused (Leaving)');
+        dispatch(clearSelectedFilters());
+        // dispatch(clearFilterData());
+        dispatch(clearSearchData());
+        dispatch(setMaxPrice(getCategoryWithSlugData.originalMaxPrice));
+        dispatch(setMinPrice(getCategoryWithSlugData.originalMinPrice));
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
   );
 
   return (
@@ -87,7 +108,7 @@ const CategoryPage = () => {
       )}
       <Filter />
       <GridProducts
-        products={getCategoryWithSlugData}
+        products={{products: getCategoryWithSlugData.products}}
         containerStyle={styles.products}
         limit={20}
         contentContainerStyle={{paddingBottom: RH(40)}}

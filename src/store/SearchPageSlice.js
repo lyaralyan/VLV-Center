@@ -638,74 +638,7 @@ export const filterProducts = () => async (dispatch, getState) => {
   // dispatch(updateSearchPageFilter());
   dispatch(setProducts(filteredProducts?.length));
 };
-export const searchWithKeyword = (keyword, navigation) => async dispatch => {
-  if (searchedSlug !== keyword) {
-    dispatch(clearActiveFilters());
-  }
-  defaultPrices = {};
-  defaultBrands = new Set();
-  defaultCategories = new Set();
-  defaultDiscount = false;
-  searchedSlug = keyword;
-  // dispatch(setSearch(''));
 
-  dispatch(setPending(true));
-  dispatch(setIsDynamic(false));
-  dispatch(setSalePage(false));
-  dispatch(setSearchPage(true));
-  const phoneId = await getUniqueId();
-  axiosInstance
-    .post(`/category-new/${keyword}?item=search`, {
-      login: LOGIN,
-      password: PASSWORD,
-      token: TOKEN,
-      'Device-ID': phoneId,
-    })
-    .then(res => {
-      if (res.data?.slug) {
-        dispatch(
-          getSearchPageInfo({
-            slug: res.data.slug,
-            params: res.data?.st
-              ? {
-                  st: res.data.st,
-                }
-              : res.data?.b
-              ? {
-                  b: [res.data?.b],
-                }
-              : {},
-            navigation,
-            category: res.data.item == 'category',
-            brand: res.data.item == 'brand',
-          }),
-        );
-      } else if (res.data?.data?.products?.length) {
-        dispatch(setCategoryName(res.data?.data.category_name));
-        dispatch(setOpenMenu(false));
-
-        searchPageData = res.data?.data;
-        searchPageProducts = res.data?.data?.products;
-
-        dispatch(setTotalCount(res.data?.data?.pagination.total));
-        dispatch(createSearchPageFilter());
-        navigation.navigate('SearchPage');
-        dispatch(setPending(false));
-      } else if (res.data?.seller_product_id) {
-        dispatch(setPending(false));
-        navigation.navigate('ProductPage', {
-          productId: res.data?.seller_product_id,
-        });
-      } else {
-        dispatch(setPending(false));
-        navigation.navigate('SearchNull');
-      }
-    })
-    .catch(err => {
-      dispatch(setPending(false));
-      console.warn('Error: searchWithKeyword', err);
-    });
-};
 export const filterForSalePage =
   ({slug, params = {}}) =>
   async dispatch => {

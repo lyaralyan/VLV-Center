@@ -9,6 +9,7 @@ import {setPending} from './MainSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import isProductPrice from '@helpers/isProductPrice';
+import {Http} from 'http';
 
 const initialState = {
   cartProducts: [],
@@ -17,6 +18,7 @@ const initialState = {
   cartCount: 0,
   favoritesPageproducts: [],
   comparePageProducts: [],
+  cartSimilarProducts: [],
   compares: [],
   totalPrice: 0,
   discountTotalPrice: 0,
@@ -30,6 +32,7 @@ const initialState = {
   },
   attachBankCardRedirectUrl: null,
   showThanksModal: false,
+  showThanksModalCash: false,
   promoCode: '',
 };
 
@@ -85,6 +88,7 @@ export const cartSlice = createSlice({
     },
     removeFavorites: (store, action) => {
       let data = store.favorites.filter(id => id !== action.payload);
+
       return {
         ...store,
         favorites: data,
@@ -200,6 +204,12 @@ export const cartSlice = createSlice({
         showThanksModal: action.payload,
       };
     },
+    setShowThanksModalCash: (store, action) => {
+      return {
+        ...store,
+        showThanksModalCash: action.payload,
+      };
+    },
     setPromoCode: (store, action) => {
       return {
         ...store,
@@ -232,6 +242,30 @@ export const addCardStore =
   (product, is_buy_now = 'no') =>
   async (dispatch, getState) => {
     const userId = await getState().user.userId;
+    console.log(
+      '📢 [CartSlice.js:246]',
+      {
+        installing:
+          product.installing_is_on || !!product?.product?.installing_price,
+        installing_count: +(
+          product.installing_is_on || !!product?.product?.installing_price
+        ),
+        installing_qty: +(
+          product.installing_is_on || !!product?.product?.installing_price
+        ),
+        price:
+          product.price ||
+          product?.promo_price ||
+          product?.skus[0]?.selling_price ||
+          product.pricing.selling_price,
+        qty: product?.qty || 1,
+        product_id:
+          product?.seller_product_sku_id ||
+          product?.skus?.[0]?.id ||
+          product.id,
+      },
+      'product',
+    );
     axiosInstance
       .post(
         'https://vlv.am/cart/store',
@@ -254,9 +288,13 @@ export const addCardStore =
           price:
             product.price ||
             product?.promo_price ||
-            product?.skus[0]?.selling_price,
+            product?.skus[0]?.selling_price ||
+            product.pricing.selling_price,
           qty: product?.qty || 1,
-          product_id: product?.seller_product_sku_id || product?.skus?.[0]?.id,
+          product_id:
+            product?.seller_product_skus ||
+            product?.skus?.[0]?.id ||
+            product.id,
           seller_id: 1,
           shipping_method_id: 0,
           type: 'product',
@@ -433,17 +471,22 @@ export const getCartPageProducts =
   };
 
 export const getCartSimilarProducts = () => dispatch => {
-  axiosInstance
-    .post('cart/similar-products', {
+  Http.post(
+    'cart/similar-products',
+    {
+      'Device-ID': DEVICE_ID,
+    },
+    {
       login: LOGIN,
       password: PASSWORD,
       token: TOKEN,
       session_id: S_D,
       _token: _TOKEN,
-      'Device-ID': DEVICE_ID,
-    })
+      user_id: USER_ID,
+    },
+  )
     .then(response => {
-      dispatch(setCartSimilarProducts(response.data));
+      dispatch(setCartSimilarProducts(response));
     })
     .catch(err => {
       console.warn('Error: getCartSimilarProducts', err);
@@ -536,9 +579,10 @@ export const addWishList = data => dispatch => {
       }
     })
     .catch(err => {
-      console.warn('Error: addWishList', err);
+      console.error('Error: addWishList', err);
     });
 };
+
 export const getComparePageProducts =
   (loading = true) =>
   async dispatch => {
@@ -1012,6 +1056,7 @@ export const {
   setCouponAmount,
   setAttachBankCardRedirectUrl,
   setShowThanksModal,
+  setShowThanksModalCash,
   setPromoCode,
 } = cartSlice.actions;
 export default cartSlice.reducer;

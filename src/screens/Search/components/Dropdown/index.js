@@ -18,14 +18,12 @@ import {
 } from '@screens/Home/components/SearchInputNew/request/filterSlice';
 import {SvgUri} from 'react-native-svg';
 import {STORAGE_URL} from '@env';
-import sort_types from '@screens/Search/data/sort_types';
 
 const Dropdown = ({
   title,
   icon,
   currentData = [],
   multiSelect = false,
-  color = false,
   opened = false,
   isBrand = false,
 }) => {
@@ -33,7 +31,9 @@ const Dropdown = ({
   const currentLanguage = useSelector(({main}) => main.currentLanguage);
   const dropdownAnimation = useSharedValue(0);
   const dispatch = useDispatch();
-  const {selectedFilters, brand} = useSelector(({filterSlice}) => filterSlice);
+  const {selectedFilters, brand, sort_by} = useSelector(
+    ({filterSlice}) => filterSlice,
+  );
 
   const interpolatedArrowAnimation = useAnimatedStyle(() => {
     return {
@@ -53,24 +53,26 @@ const Dropdown = ({
     };
   });
 
+  // useEffect(() => {
+  //   if (+open !== dropdownAnimation.value) {
+  //     dropdownAnimation.value = withTiming(
+  //       dropdownAnimation.value ? 0 : currentData?.length * RH(60),
+  //     );
+  //   }
+  // }, [currentData?.length, dropdownAnimation, open]);
+
   useEffect(() => {
-    if (+open !== dropdownAnimation.value) {
-      dropdownAnimation.value = withTiming(
-        dropdownAnimation.value ? 0 : currentData?.length * RH(60),
-      );
-    }
-  }, [currentData?.length, dropdownAnimation, open]);
+    dropdownAnimation.value = withTiming(
+      open ? currentData?.length * RH(60) : 0,
+      {
+        duration: 300,
+      },
+    );
+  }, [open, currentData?.length, dropdownAnimation]);
 
-  /**
-   * Checks if an item is selected in the current category.
-   */
   const isItemChecked = item => {
-    const sorting =
-      Array.isArray(sort_types?.values) &&
-      sort_types.values.some(e => e?.id === item?.id);
-
-    if (sorting) {
-      return sorting;
+    if (currentData?.name_hy === 'Տեսակավորում') {
+      return sort_by?.id === item.id;
     }
 
     if (isBrand) {
@@ -98,6 +100,7 @@ const Dropdown = ({
 
   const toggleCheckbox = item => {
     const updatedFilters = [...selectedFilters];
+
     const categoryIndex = updatedFilters.findIndex(
       cat => cat.name_hy === currentData.name_hy,
     );
@@ -164,9 +167,12 @@ const Dropdown = ({
                   style={[
                     styles.selectRow,
                     // eslint-disable-next-line react-native/no-inline-styles
-                    color && {justifyContent: 'flex-start', columnGap: RW(15)},
+                    item?.color && {
+                      justifyContent: 'flex-start',
+                      columnGap: RW(15),
+                    },
                   ]}>
-                  {color && (
+                  {item?.color && (
                     <View
                       style={[
                         styles.selectedCheckBtn,
@@ -199,29 +205,20 @@ const Dropdown = ({
                     </Text>
                   )}
 
-                  {!color &&
+                  {!item?.color &&
                     (multiSelect ? (
                       <View style={styles.checkBtn}>
-                        {isItemChecked(item) && (
+                        {isItemChecked(item) ? (
                           <View style={styles.selectedCheckBtn}>
                             <CheckSvg />
                           </View>
-                        )}
+                        ) : null}
                       </View>
                     ) : (
                       <View style={styles.radioBtn}>
-                        {isItemChecked(item) && (
-                          <View
-                            style={({pressed}) => [
-                              styles.selectedRadioBtn,
-                              {
-                                backgroundColor: pressed
-                                  ? Colors.darkRed
-                                  : Colors.red,
-                              },
-                            ]}
-                          />
-                        )}
+                        {isItemChecked(item) ? (
+                          <View style={[styles.selectedRadioBtn]} />
+                        ) : null}
                       </View>
                     ))}
                 </Row>
@@ -255,19 +252,21 @@ const styles = StyleSheet.create({
     maxWidth: '95%',
   },
   radioBtn: {
-    width: RW(23),
-    height: RW(23),
-    borderRadius: RW(12),
-    borderWidth: RW(1),
+    width: 23,
+    height: 23,
+    borderRadius: 12,
+    borderWidth: 1,
     borderColor: Colors.red,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
   },
   selectedRadioBtn: {
-    width: RW(17),
-    height: RW(17),
-    borderRadius: RW(9),
+    width: 17,
+    height: 17,
+    borderRadius: 9,
     backgroundColor: Colors.red,
+    position: 'absolute',
   },
   checkBtn: {
     width: RW(23),

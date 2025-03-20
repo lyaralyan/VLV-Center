@@ -12,7 +12,7 @@ const FeatureCategories = ({data, onPress, style = {}, brand}) => {
     <FlatList
       data={data || featureCategories}
       horizontal
-      keyExtractor={(item, index) => `key-${index}`}
+      keyExtractor={(_, index) => `key-${index}`}
       contentContainerStyle={[styles.featureCategories, style]}
       showsHorizontalScrollIndicator={false}
       renderItem={({item}) => {
@@ -22,7 +22,12 @@ const FeatureCategories = ({data, onPress, style = {}, brand}) => {
               item?.['title_' + currentLanguage] ||
               item?.['name_' + currentLanguage]
             }
-            img={item?.image || item?.category_image?.image || item?.icon}
+            img={
+              item?.image?.image ||
+              item?.image ||
+              item?.category_image?.image ||
+              item?.icon
+            }
             slug={item?.slug}
             onPress={onPress}
             brand={brand}

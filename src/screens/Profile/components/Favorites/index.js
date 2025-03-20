@@ -27,7 +27,7 @@ const Favorites = () => {
     <ScrollView
       showsVerticalScrollIndicator={false}
       style={styles.container}
-      contentContainerStyle={{flex: 1}}>
+      contentContainerStyle={styles.contentContainerStyle}>
       <Text allowFontScaling={false} style={styles.title}>
         {t('favorites2')}
       </Text>
@@ -36,9 +36,9 @@ const Favorites = () => {
         <ActivityIndicator />
       ) : favoritesPageproducts?.length ? (
         <GridProducts
-          products={favoritesPageproducts}
-          containerStyle={{backgroundColor: '#fff'}}
-          contentContainerStyle={{backgroundColor: '#fff'}}
+          products={{products: favoritesPageproducts}}
+          containerStyle={styles.containerStyle}
+          contentContainerStyle={styles.containerStyle}
           onDeletePress={product => {
             dispatch(removeFavorites(product?.seller_product_id));
             dispatch(
@@ -87,5 +87,11 @@ const styles = StyleSheet.create({
     ...font('medium', 16),
     textTransform: 'uppercase',
     marginTop: RH(20),
+  },
+  containerStyle: {
+    backgroundColor: '#fff',
+  },
+  contentContainerStyle: {
+    flex: 1,
   },
 });

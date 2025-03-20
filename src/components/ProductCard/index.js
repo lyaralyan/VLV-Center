@@ -49,28 +49,24 @@ const ProductCard = ({
   const gallery = prod?.media ?? prod?.gallary_images_api;
 
   useEffect(() => {
-    if (cartProducts?.find(id => prod?.id === id)) {
+    if (cartProducts?.find(id => prod?.seller_id === id)) {
       setStoreAdded(true);
     } else {
       setStoreAdded(false);
     }
-  }, [cartProducts, prod?.id]);
+  }, [cartProducts, prod?.seller_id]);
 
   let promoPrice =
     (prod?.online_price && prod?.online_selling_price) ||
-    price?.recommended_retail_price ||
-    prod?.promo_price;
-
-  const discountedPrice = calculatePrice({
-    product_id: prod?.product_id,
-    category_id: prod?.categories?.[0]?.id,
+    product?.recommended_retail_price ||
+    product?.promo_price;
+  const {finalPrice, appliedDiscount, isDiscountApplied} = calculatePrice({
+    product_id: product?.id,
+    category_id: product?.categories?.[0]?.laravel_through_key,
     brand_id: prod?.brand?.id,
-    price: promoPrice || price?.selling_price,
+    price: price?.selling_price,
     promoPrice,
   });
-  // if (discountedPrice) {
-  //   promoPrice = discountedPrice;
-  // }
 
   const handleScroll = event => {
     const pageIndex = Math.round(event.nativeEvent.contentOffset.x / RW(110));
@@ -100,7 +96,7 @@ const ProductCard = ({
         {typeof onDeletePress === 'function' && (
           <Pressable
             onPress={() => {
-              onDeletePress(prod);
+              onDeletePress(product);
             }}
             style={[styles.deleteBtn]}>
             <DeleteSvg color={Colors.gray} width={RW(17)} height={RH(17)} />
@@ -120,7 +116,7 @@ const ProductCard = ({
             onPress={() => {
               if (!smallProduct) {
                 navigation.navigate('ProductPage', {
-                  productId: prod?.id,
+                  productId: prod?.seller_id ?? product?.id,
                 });
               }
             }}
@@ -144,7 +140,7 @@ const ProductCard = ({
                       <Image
                         onPress={() => {
                           navigation.navigate('ProductPage', {
-                            productId: prod?.id,
+                            productId: prod?.seller_id ?? product?.id,
                           });
                         }}
                         key={index}
@@ -156,11 +152,11 @@ const ProductCard = ({
                         }
                       />
                     ))
-                  : prod.gallary_images_api.map((item, index) => (
+                  : prod?.gallary_images_api?.map((item, index) => (
                       <Image
                         onPress={() => {
                           navigation.navigate('ProductPage', {
-                            productId: prod?.id,
+                            productId: prod?.seller_id ?? product?.id,
                           });
                         }}
                         key={index}
@@ -173,7 +169,7 @@ const ProductCard = ({
               <Image
                 onPress={() => {
                   navigation.navigate('ProductPage', {
-                    productId: prod?.id,
+                    productId: prod?.seller_id ?? product?.id,
                   });
                 }}
                 style={styles.productImg}
@@ -249,7 +245,7 @@ const ProductCard = ({
             )}
           </View>
         )}
-        {discountedPrice < price?.selling_price && (
+        {isDiscountApplied && (
           <View
             style={[
               styles.mobileDiscount,
@@ -261,11 +257,7 @@ const ProductCard = ({
               source={require('./../../assets/mobile_discount.png')}
             />
             <Text allowFontScaling={false} style={styles.mobileDiscountText}>
-              -
-              {UseCalcPrice(
-                price?.selling_price - discountedPrice,
-                currentCurrency,
-              )}
+              -{UseCalcPrice(appliedDiscount, currentCurrency)}
               {'\n'}
               {t('discount')}
             </Text>
@@ -276,7 +268,7 @@ const ProductCard = ({
         onPress={() => {
           if (!smallProduct) {
             navigation.navigate('ProductPage', {
-              productId: prod.id,
+              productId: product.id,
             });
           }
         }}
@@ -315,7 +307,7 @@ const ProductCard = ({
             prod?.cashback && {paddingTop: RH(5)},
           ]}>
           <View>
-            {/* {(discountedPrice && discountedPrice < price?.selling_price) ||
+            {(finalPrice && finalPrice < price?.selling_price) ||
             (promoPrice && promoPrice < price?.selling_price) ? (
               <View>
                 <Text
@@ -325,7 +317,7 @@ const ProductCard = ({
                       ...font('regular', 8),
                     },
                   ]}>
-                  {UseCalcPrice(discountedPrice || promoPrice, currentCurrency)}
+                  {UseCalcPrice(finalPrice || promoPrice, currentCurrency)}
                 </Text>
                 <View>
                   <Text
@@ -340,17 +332,17 @@ const ProductCard = ({
                   <View style={styles.selingPriceLine} />
                 </View>
               </View>
-            ) : ( */}
-            <Text
-              style={[
-                styles.price,
-                smallProduct && {
-                  ...font('regular', 8),
-                },
-              ]}>
-              {UseCalcPrice(price?.selling_price, currentCurrency)}
-            </Text>
-            {/* )} */}
+            ) : (
+              <Text
+                style={[
+                  styles.price,
+                  smallProduct && {
+                    ...font('regular', 8),
+                  },
+                ]}>
+                {UseCalcPrice(price?.selling_price, currentCurrency)}
+              </Text>
+            )}
             <Text
               style={[
                 styles.monthlyPrice,
@@ -388,13 +380,19 @@ const ProductCard = ({
             }}
             onPress={async () => {
               if (!smallProduct) {
-                dispatch(addCartProduct(prod.id));
+                console.log('📢 [index.js:383]', prod, '');
+                dispatch(
+                  addCartProduct(
+                    prod?.seller_product_skus ||
+                      prod?.skus?.[0]?.id ||
+                      prod.id,
+                  ),
+                );
                 dispatch(addCartCount());
                 dispatch(
                   addCardStore({
-                    ...prod,
-                    price:
-                      discountedPrice || promoPrice || price?.selling_price,
+                    ...product,
+                    price: finalPrice || promoPrice || price?.selling_price,
                   }),
                 );
                 if (onPressAddCart) {

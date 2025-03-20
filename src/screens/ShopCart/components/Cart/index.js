@@ -12,18 +12,19 @@ const Cart = () => {
 
   useEffect(() => {
     dispatch(getCartSimilarProducts());
-  }, []);
-  
+  }, [dispatch]);
+
   return (
     <View>
       <View style={styles.products}>
         {cartProducts?.map((product, index) => (
           <CartProduct
             product={product}
-            key={product.cart_id || Math.random()}
+            key={product?.cart_id || Math.random()}
           />
         ))}
       </View>
+
       {!!(
         cartSimilarProducts?.cart_similar_categories?.length &&
         Object.keys(cartSimilarProducts?.cart_similar_products || {})?.length

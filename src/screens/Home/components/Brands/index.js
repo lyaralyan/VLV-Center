@@ -4,10 +4,10 @@ import {useDispatch, useSelector} from 'react-redux';
 import {font, RW, RH} from '@theme/utils';
 import Row from '@theme/wrappers/row';
 import {useTranslation} from 'react-i18next';
-import {getBrandCategories, getBrands} from '../../../../store/MainSlice';
+import {getBrands} from '../../../../store/MainSlice';
 import Image from '@components/Image';
 import {useNavigation} from '@react-navigation/native';
-import Colors from '@theme/colors';
+import {getBrandsRequest} from '../SearchInputNew/request/getBrandsSlice';
 
 const Brands = ({data}) => {
   const brands = useSelector(({main}) => main.brands);
@@ -19,7 +19,7 @@ const Brands = ({data}) => {
     if (!brands?.length) {
       dispatch(getBrands());
     }
-  }, []);
+  }, [brands?.length, dispatch]);
 
   return (
     <View style={styles.container}>
@@ -42,9 +42,13 @@ const Brands = ({data}) => {
             <Pressable
               key={index}
               style={styles.brandBtn}
-              onPress={() =>
-                dispatch(getBrandCategories(item.slug, navigation))
-              }>
+              onPress={() => {
+                dispatch(getBrandsRequest({brand: item.slug}))
+                  .unwrap()
+                  .then(res => {
+                    navigation.navigate('BrandCategoriesPage');
+                  });
+              }}>
               <Image style={styles.brand} url={item.logo} />
             </Pressable>
           );

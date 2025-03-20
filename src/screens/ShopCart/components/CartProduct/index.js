@@ -23,6 +23,7 @@ import {
 import {useTranslation} from 'react-i18next';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import useProductPrice from '@helpers/useProductPrice';
+import FastImage from 'react-native-fast-image';
 
 const CartProduct = ({product}) => {
   const [count, setCount] = useState(product?.qty || 1);
@@ -44,15 +45,16 @@ const CartProduct = ({product}) => {
     if (isFocused && typeof product !== 'object') {
       dispatch(getCartPageProducts());
     }
-  }, [isFocused, product]);
+  }, [dispatch, isFocused, product]);
 
   // Calculate promo and discounted price
   const promoPrice =
     product?.seller_product?.promo_price ||
     product?.seller_product?.recommended_retail_price ||
     product?.seller_product?.skus?.[0]?.selling_price;
+  const selling_price = product?.seller_product?.skus?.[0]?.selling_price;
 
-  const discountedPrice = calculatePrice({
+  const {finalPrice, appliedDiscount, isDiscountApplied} = calculatePrice({
     product_id: product?.seller_product?.product_id,
     category_id: product?.seller_product?.categories?.[0]?.id,
     brand_id: product?.seller_product?.product?.brand?.id,
@@ -60,7 +62,7 @@ const CartProduct = ({product}) => {
     promoPrice,
   });
 
-  const discount = promoPrice - discountedPrice;
+  const discount = promoPrice - finalPrice;
 
   // Handle delete press
   const handleDeletePress = () => {
@@ -74,7 +76,9 @@ const CartProduct = ({product}) => {
   // Handle quantity change
   const handleQuantityChange = type => {
     const newCount = type === '+' ? count + 1 : count - 1;
-    if (newCount < 1) return;
+    if (newCount < 1) {
+      return;
+    }
 
     setCount(newCount);
     dispatch(setCartCount(type === '+' ? cartCount + 1 : cartCount - 1));
@@ -86,7 +90,7 @@ const CartProduct = ({product}) => {
       }),
     );
 
-    const priceChange = type === '+' ? discountedPrice : -discountedPrice;
+    const priceChange = type === '+' ? finalPrice : -finalPrice;
     dispatch(setDiscountTotalPrice(discountTotalPrice + priceChange));
     dispatch(setTotalPrice(totalPrice + priceChange));
 
@@ -94,6 +98,9 @@ const CartProduct = ({product}) => {
       setInstallingCount(newCount);
     }
   };
+
+  const price =
+    product?.seller_product?.pricing ?? product?.seller_product?.skus?.[0];
 
   return (
     <Row style={styles.container}>
@@ -112,6 +119,25 @@ const CartProduct = ({product}) => {
           style={styles.img}
         />
       </Pressable>
+
+      {isDiscountApplied && (
+        <View
+          style={[
+            styles.mobileDiscount,
+            typeof onDeletePress === 'function' && {top: RH(25)},
+          ]}>
+          <FastImage
+            style={styles.mobileDiscountImg}
+            resizeMode="contain"
+            source={require('../../../../assets/mobile_discount.png')}
+          />
+          <Text allowFontScaling={false} style={styles.mobileDiscountText}>
+            -{UseCalcPrice(appliedDiscount, currentCurrency)}
+            {'\n'}
+            {t('discount')}
+          </Text>
+        </View>
+      )}
 
       {/* Product Info */}
       <View style={styles.infoBlock}>
@@ -142,16 +168,14 @@ const CartProduct = ({product}) => {
               </Text>
             </Pressable>
           </View>
-          <Pressable
-            onPress={handleDeletePress}
-            style={{alignSelf: 'flex-start'}}>
+          <Pressable onPress={handleDeletePress} style={styles.pressable}>
             <DeleteSvg />
           </Pressable>
         </Row>
 
         {/* Installing Price Section */}
         {!!product?.seller_product?.product?.installing_price && (
-          <Row style={{alignItems: 'flex-start', paddingVertical: RH(10)}}>
+          <Row style={styles.row}>
             <Row>
               <Text allowFontScaling={false} style={styles.installingText}>
                 {t('installing')}
@@ -199,20 +223,19 @@ const CartProduct = ({product}) => {
 
           {/* Price Display */}
           <View>
-            {discountedPrice < promoPrice && (
+            {finalPrice < selling_price ? (
               <View>
                 <Text allowFontScaling={false} style={styles.selingPrice}>
-                  {UseCalcPrice(promoPrice, currentCurrency)}
+                  {UseCalcPrice(selling_price, currentCurrency)}
                 </Text>
                 <View style={styles.selingPriceLine} />
                 <Text allowFontScaling={false} style={styles.promoPrice}>
-                  {UseCalcPrice(discountedPrice, currentCurrency)}
+                  {UseCalcPrice(finalPrice, currentCurrency)}
                 </Text>
               </View>
-            )}
-            {!promoPrice && (
+            ) : (
               <Text allowFontScaling={false} style={styles.price}>
-                {UseCalcPrice(discountedPrice, currentCurrency)}
+                {UseCalcPrice(finalPrice, currentCurrency)}
               </Text>
             )}
           </View>
@@ -284,4 +307,29 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   installingPrice: font('bold', 14),
+  mobileDiscount: {
+    width: RW(48),
+    height: RW(48),
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mobileDiscountImg: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  mobileDiscountText: {
+    ...font('bold', 6, '#fff'),
+    textAlign: 'center',
+  },
+  row: {
+    alignItems: 'flex-start',
+    paddingVertical: RH(10),
+  },
+  pressable: {
+    alignSelf: 'flex-start',
+  },
 });

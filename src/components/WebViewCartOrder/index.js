@@ -1,4 +1,4 @@
-import {Pressable, View} from 'react-native';
+import {Pressable, StyleSheet, View} from 'react-native';
 import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {
@@ -65,18 +65,28 @@ const WebViewCartOrder = () => {
   };
   const insets = useSafeAreaInsets();
 
-  if (!submitFormTag && !attachBankCardRedirectUrl) return null;
+  if (!submitFormTag && !attachBankCardRedirectUrl) {
+    return null;
+  }
+
+  const webViewSource = attachBankCardRedirectUrl?.form_url
+    ? {uri: attachBankCardRedirectUrl.form_url}
+    : {
+        html:
+          (attachBankCardRedirectUrl?.acsUrl
+            ? `<form style="display: none" action="${attachBankCardRedirectUrl.acsUrl}" method="POST">
+            <input type="hidden" id="cReq" name="creq" value="${attachBankCardRedirectUrl.cReq}">
+            <input type="submit" value="Submit">
+          </form>`
+            : submitFormTag) +
+          `<script>setTimeout(() => {
+          const formTag = document.querySelector("form")
+          formTag.submit()
+      }, 100)</script>`,
+      };
+
   return (
-    <View
-      style={{
-        position: 'absolute',
-        width: '100%',
-        height: '100%',
-        flex: 1,
-        paddingTop: insets.top,
-        backgroundColor: '#fff',
-        zIndex: 99999,
-      }}>
+    <View style={[styles.container, {paddingTop: insets.top}]}>
       <Pressable
         style={{marginLeft: RW(16), marginBottom: RH(10)}}
         onPress={async () => {
@@ -140,30 +150,26 @@ const WebViewCartOrder = () => {
         <BackArrowSvg />
       </Pressable>
       <WebView
-        style={{
-          position: 'absolute',
-          height: '100%',
-          width: '100%',
-          zIndex: 99999,
-        }}
+        style={styles.WebView}
         startInLoadingState
         autoManageStatusBarEnabled={false}
         source={
-          attachBankCardRedirectUrl?.form_url
-            ? {uri: attachBankCardRedirectUrl.form_url}
-            : {
-                html:
-                  (attachBankCardRedirectUrl?.acsUrl
-                    ? `<form style="display: none" action="${attachBankCardRedirectUrl.acsUrl}" method="POST">
-                      <input type="hidden" id="cReq" name="creq" value="${attachBankCardRedirectUrl.cReq}">
-                      <input type="submit" value="Submit">
-                    </form>`
-                    : submitFormTag) +
-                  `<script>setTimeout(() => {
-                    const formTag = document.querySelector("form")
-                    formTag.submit()
-                }, 100)</script>`,
-              }
+          webViewSource
+          // attachBankCardRedirectUrl?.form_url
+          //   ? {uri: attachBankCardRedirectUrl.form_url}
+          //   : {
+          //       html:
+          //         (attachBankCardRedirectUrl?.acsUrl
+          //           ? `<form style="display: none" action="${attachBankCardRedirectUrl.acsUrl}" method="POST">
+          //             <input type="hidden" id="cReq" name="creq" value="${attachBankCardRedirectUrl.cReq}">
+          //             <input type="submit" value="Submit">
+          //           </form>`
+          //           : submitFormTag) +
+          //         `<script>setTimeout(() => {
+          //           const formTag = document.querySelector("form")
+          //           formTag.submit()
+          //       }, 100)</script>`,
+          //     }
         }
         onError={err => console.warn('WebView error: ', err)}
         onNavigationStateChange={onNavigationStateChange}
@@ -171,5 +177,22 @@ const WebViewCartOrder = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    flex: 1,
+    backgroundColor: '#fff',
+    zIndex: 99999,
+  },
+  WebView: {
+    position: 'absolute',
+    height: '100%',
+    width: '100%',
+    zIndex: 99999,
+  },
+});
 
 export default WebViewCartOrder;

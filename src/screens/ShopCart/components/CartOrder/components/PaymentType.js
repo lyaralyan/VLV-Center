@@ -9,7 +9,7 @@ const PaymentType = ({selected, onSelect, data}) => {
   return (
     <Pressable style={styles.container} onPress={onSelect}>
       <View style={[styles.dot, selected && styles.activeDot]} />
-      {data?.id == 23 && (
+      {data?.id === 23 && (
         <>
           <Text allowFontScaling={false} style={styles.text1}>
             {data.name}
@@ -27,7 +27,7 @@ const PaymentType = ({selected, onSelect, data}) => {
           )}
         </>
       )}
-      {!!data?.id ? (
+      {data?.id ? (
         data.icon
       ) : (
         <FastImage

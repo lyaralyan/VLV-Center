@@ -1,37 +1,46 @@
 import {Pressable, StyleSheet, Text} from 'react-native';
 import React from 'react';
 import {RH, RW, font} from '../../../../../../theme/utils';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
-import {getSearchPageInfo} from '@store/SearchPageSlice';
 import Image from '@components/Image';
-import {setPending} from '@store/MainSlice';
+import {getCategoryWithSlugRequest} from '@screens/Home/components/SearchInputNew/request/getCategoryWithSlugSlice';
 
-const FeatureCategoriesItem = ({
-  img,
-  title,
-  slug,
-  onPress = () => {},
-  brand,
-}) => {
+const FeatureCategoriesItem = ({img, title, slug, onPress = () => {}}) => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
+  const {selectedFilters, discount, maxPrice, minPrice, sort_by} = useSelector(
+    ({filterSlice}) => filterSlice,
+  );
+
+  const handlePress = async () => {
+    try {
+      await dispatch(
+        getCategoryWithSlugRequest({
+          brand: [],
+          slug,
+          discount,
+          manufacture: selectedFilters,
+          maxPrice,
+          minPrice,
+          page: 1,
+          sort_by,
+        }),
+      );
+
+      // Set the slug after the request
+      // dispatch(setSlug(slug));
+
+      navigation.navigate('CategoryPage');
+    } catch (error) {
+      console.error('Error handling brand press:', error);
+    }
+  };
+
   return (
     <Pressable
       onPress={() => {
-        let params = {};
-        if (brand) {
-          params.b = [brand];
-        }
-        dispatch(setPending(true));
-        dispatch(
-          getSearchPageInfo({
-            slug: slug,
-            params,
-            navigation,
-            category: true,
-          }),
-        );
+        handlePress();
         onPress();
       }}
       style={styles.container}>

@@ -8,14 +8,6 @@ import Filter from '../../components/Filter';
 import GridProducts from '@components/GridProducts';
 import {useTranslation} from 'react-i18next';
 import SearchInput from '@screens/Home/components/SearchInputNew/SearchInput';
-import {
-  getDynamicPageInfo,
-  getSearchPageInfo,
-  searchPageData,
-  searchWithKeyword,
-  setActiveBrands,
-  setSearch,
-} from '@store/SearchPageSlice';
 import {setInnerPending} from '@store/MainSlice';
 import FeatureCategories from '@screens/Home/components/FeatureCategories';
 import Colors from '@theme/colors';
@@ -36,41 +28,41 @@ const SearchPage = props => {
     dispatch(setInnerPending(false));
   }, [dispatch]);
 
-  useEffect(() => {
-    if (props.route.params?.keyword) {
-      dispatch(searchWithKeyword(props.route.params?.keyword, navigation));
-    } else if (props.route.params?.slug) {
-      dispatch(setInnerPending(true));
-      let params = {};
-      if (props.route.params?.st) {
-        params.st = props.route.params?.st;
-        dispatch(setSearch(props.route.params?.st));
-      }
-      if (props.route.params?.b) {
-        params.b = [props.route.params?.b];
-        dispatch(setActiveBrands([props.route.params?.b]));
-      }
-      if (props.route.params?.dynamic) {
-        dispatch(
-          getDynamicPageInfo({
-            slug: props.route.params?.slug,
-            params: params,
-            navigation,
-          }),
-        );
-      } else {
-        dispatch(
-          getSearchPageInfo({
-            slug: props.route.params?.slug,
-            params: params,
-            category: props.route.params?.item === 'category',
-            brand: props.route.params?.item === 'brand',
-            navigation,
-          }),
-        );
-      }
-    }
-  }, [dispatch, navigation, props.route.params]);
+  // useEffect(() => {
+  //   if (props.route.params?.keyword) {
+  //     dispatch(searchWithKeyword(props.route.params?.keyword, navigation));
+  //   } else if (props.route.params?.slug) {
+  //     dispatch(setInnerPending(true));
+  //     let params = {};
+  //     if (props.route.params?.st) {
+  //       params.st = props.route.params?.st;
+  //       dispatch(setSearch(props.route.params?.st));
+  //     }
+  //     if (props.route.params?.b) {
+  //       params.b = [props.route.params?.b];
+  //       dispatch(setActiveBrands([props.route.params?.b]));
+  //     }
+  //     if (props.route.params?.dynamic) {
+  //       dispatch(
+  //         getDynamicPageInfo({
+  //           slug: props.route.params?.slug,
+  //           params: params,
+  //           navigation,
+  //         }),
+  //       );
+  //     } else {
+  //       dispatch(
+  //         getSearchPageInfo({
+  //           slug: props.route.params?.slug,
+  //           params: params,
+  //           category: props.route.params?.item === 'category',
+  //           brand: props.route.params?.item === 'brand',
+  //           navigation,
+  //         }),
+  //       );
+  //     }
+  //   }
+  // }, [dispatch, navigation, props.route.params]);
 
   return (
     <ScrollView
@@ -86,7 +78,7 @@ const SearchPage = props => {
           {isDynamic ? (
             <View>
               <Text allowFontScaling={false} style={styles.title}>
-                {searchPageData?.pageTitle?.['title_' + currentLanguage]}
+                {getCategoryWithSlugData?.pageTitle?.['title_' + currentLanguage]}
               </Text>
             </View>
           ) : (
@@ -104,12 +96,12 @@ const SearchPage = props => {
         </View>
       </View>
       <SearchInput />
-      {searchPageData?.categoryList?.length > 0 && (
+      {getCategoryWithSlugData?.category_list?.length > 0 && (
         <FeatureCategories
-          data={searchPageData?.categoryList}
+          data={getCategoryWithSlugData?.category_list}
           brand={
             searchType === 'brand' &&
-            searchPageData?.products?.[0]?.product?.brand?.id
+            getCategoryWithSlugData?.products?.[0]?.product?.brand?.id
           }
         />
       )}

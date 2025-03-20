@@ -21,10 +21,13 @@ export default function GridProducts({
   const [showedProducts, setShowedProducts] = useState(limit);
   const {t} = useTranslation();
   let yPos;
-
+  const productList = Array.isArray(products)
+    ? products
+    : products?.products ?? [];
   if (!products?.products?.length) {
     return null;
   }
+
   return (
     <View
       onLayout={e => {
@@ -46,11 +49,7 @@ export default function GridProducts({
         </Row>
       )}
       <FlatList
-        data={
-          withLimit
-            ? products?.products?.slice(0, showedProducts)
-            : products?.products
-        }
+        data={withLimit ? productList?.slice(0, showedProducts) : productList}
         numColumns={2}
         keyExtractor={(item, index) => `key-${index}`}
         pagingEnabled
@@ -63,6 +62,19 @@ export default function GridProducts({
         renderItem={({item}) => (
           <ProductCard product={item} onDeletePress={onDeletePress} />
         )}
+        // ListEmptyComponent={
+        //   <View
+        //     style={{
+        //       flex: 1,
+        //       justifyContent: 'center',
+        //       alignItems: 'center',
+        //       backgroundColor: 'red',
+        //     }}>
+        //     <Text style={{color: 'white', fontSize: 16}}>
+        //       Products not found
+        //     </Text>
+        //   </View>
+        // }
       />
       {withLimit && showedProducts < products?.products?.length ? (
         <Pressable

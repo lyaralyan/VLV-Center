@@ -53,7 +53,7 @@ export default function OTP(props) {
           {t('Sign Up')}
         </Text>
         <Text allowFontScaling={false} style={styles.subTitle}>
-          {t('enter_log_pass')}
+          {t('enter_otp')}
         </Text>
         <View style={styles.wrapper}>
           <OTPInputCustom

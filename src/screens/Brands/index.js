@@ -8,6 +8,7 @@ import {RH, RW, font} from '@theme/utils';
 import {useNavigation} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {getBrandsRequest} from '@screens/Home/components/SearchInputNew/request/getBrandsSlice';
 
 const Brands = () => {
   const allBrands = useSelector(({main}) => main.allBrands);
@@ -32,7 +33,11 @@ const Brands = () => {
             style={styles.btn}
             key={index}
             onPress={() => {
-              dispatch(getBrandCategories(item.slug, navigation));
+              dispatch(getBrandsRequest({brand: item.slug}))
+                .unwrap()
+                .then(res => {
+                  navigation.navigate('BrandCategoriesPage');
+                });
             }}>
             <Image style={styles.brand} url={item.logo} />
             <Text allowFontScaling={false} style={styles.brandName}>

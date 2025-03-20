@@ -123,19 +123,26 @@ const useProductPrice = () => {
       finalPrice = promoPrice;
     }
 
-    // Ensure discounts are applied correctly
+    // Ստեղծենք փոփոխություն միայն զեղչի համար
+    let appliedDiscount = 0;
     if (discount) {
       discountPrice = Number(discountPrice) || 0;
       discount_type = Number(discount_type) || 0;
 
-      finalPrice =
-        discount_type === 1
-          ? finalPrice - discountPrice
-          : finalPrice - (finalPrice / 100) * discountPrice;
+      // Կիրառել զեղչը միայն վերնագումրից
+      if (discount_type === 1) {
+        appliedDiscount = discountPrice;
+      } else {
+        appliedDiscount = (finalPrice / 100) * discountPrice;
+      }
     }
 
-    // Ensure finalPrice is a valid number
-    return isNaN(finalPrice) ? 0 : Math.max(0, finalPrice);
+    // Վերջնական գին մնում է անփոփոխ, միայն ցուցադրում ենք զեղչի արժեքը
+    return {
+      finalPrice: isNaN(finalPrice) ? 0 : Math.max(0, finalPrice),
+      appliedDiscount,
+      isDiscountApplied: appliedDiscount > 0,
+    };
   };
 
   return calculatePrice;

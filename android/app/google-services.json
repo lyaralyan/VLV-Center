@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "202642143819",
+    "project_id": "vlv-center-19319",
+    "storage_bucket": "vlv-center-19319.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:202642143819:android:572e8df5e8f8a38c44ebce",
+        "android_client_info": {
+          "package_name": "com.vlv"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDlJSZV4OzFBpnYIGf80HcB2PMBI1wKeLM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

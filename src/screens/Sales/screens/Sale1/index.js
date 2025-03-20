@@ -6,7 +6,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import React, {useEffect} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import Header from '@components/Header';
 import HeaderCategories from '@components/HeaderCategories';
 import SearchInput from '@screens/Home/components/SearchInputNew/SearchInput';
@@ -22,21 +22,47 @@ import ProductsWithSlide from '@components/ProductsWithSlide';
 import GridProducts from '@components/GridProducts';
 import Colors from '@theme/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {getCategoryWithSlugRequest} from '@screens/Home/components/SearchInputNew/request/getCategoryWithSlugSlice';
 
 const screenWith = Dimensions.get('screen').width;
 const Sale1 = props => {
+  const insets = useSafeAreaInsets();
   const {salePage, currentLanguage} = useSelector(({main}) => main);
   let saleId = props.route.params.id;
-
+  const {discount, sort_by} = useSelector(({filterSlice}) => filterSlice);
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
   useEffect(() => {
-    if (salePage?.sale?.id !== saleId) {
+    if (!salePage?.sale || salePage.sale.id !== saleId) {
       dispatch(getSalePage(saleId));
     }
-  }, [saleId]);
-  const insets = useSafeAreaInsets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch]);
+
+  const handleCategoryPress = useCallback(
+    async item => {
+      const brandIdsArray = (salePage?.sale?.brand_ids?.split(',') || []).map(
+        e => ({id: e}),
+      );
+
+      await dispatch(
+        getCategoryWithSlugRequest({
+          brand: brandIdsArray,
+          slug: item.slug,
+          manufacture: [],
+          discount,
+          maxPrice: undefined,
+          minPrice: undefined,
+          page: 1,
+          sort_by,
+        }),
+      );
+
+      navigation.navigate('CategoryPage');
+    },
+    [salePage?.sale?.brand_ids, dispatch, discount, sort_by, navigation],
+  );
 
   return (
     <ScrollView
@@ -49,7 +75,7 @@ const Sale1 = props => {
       <View style={styles.wrapper}>
         <Pressable
           onPress={() => {
-            if (salePage?.sale?.baner_gl_navigate == 'SearchPage') {
+            if (salePage?.sale?.baner_gl_navigate === 'SearchPage') {
               if (!salePage?.sale?.baner_gl_navigate_params) {
                 return null;
               }
@@ -91,32 +117,17 @@ const Sale1 = props => {
         )}
         <BrandPageCategories
           data={salePage?.categories}
-          onPress={item => {
-            dispatch(setPending(true));
-            dispatch(
-              getSearchPageInfo({
-                slug: item?.slug,
-                params: {
-                  b: salePage?.sale?.brand_ids
-                    ? salePage?.sale?.brand_ids.split(',')
-                    : [],
-                },
-                navigation,
-                category: true,
-              }),
-            );
-          }}
+          onPress={handleCategoryPress}
         />
       </View>
       <ProductsWithSlide products={salePage?.products_first_slider} />
       <View style={styles.wrapper}>
         <Pressable
           onPress={() => {
-            if (salePage?.sale?.slider1_navigate == 'SearchPage') {
+            if (salePage?.sale?.slider1_navigate === 'SearchPage') {
               if (!salePage?.sale?.slider1_navigate_params) {
                 return null;
               }
-              dispatch(setPending(true));
               dispatch(
                 getSearchPageInfo({
                   ...salePage?.sale?.slider1_navigate_params,

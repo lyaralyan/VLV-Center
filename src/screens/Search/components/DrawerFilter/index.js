@@ -6,7 +6,7 @@ import {
   Text,
   TextInput,
   useWindowDimensions,
-  Pressable,
+  Dimensions,
 } from 'react-native';
 import React, {memo, useCallback, useEffect, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
@@ -18,31 +18,36 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {
-  clearActiveFilters,
   filterForSalePage,
-  getSearchPageInfo,
-  searchPageData,
   searchedSlug,
   setShowDrawerFilter,
 } from '@store/SearchPageSlice';
 import Dropdown from '../Dropdown';
 import {useTranslation} from 'react-i18next';
-import sort_types from '@screens/Search/data/sort_types';
-import FilterSvg from '@screens/Search/assets/FilterSvg';
 import Colors from '@theme/colors';
-import PriceRange from '../PriceRange';
-import DropdownDiscount from '../DropdownDiscount';
 import Row from '@theme/wrappers/row';
 import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {setBrand} from '@screens/Home/components/SearchInputNew/request/filterSlice';
-import {getCategoryWithSlugRequest} from '@screens/Home/components/SearchInputNew/request/getCategoryWithSlugSlice';
+import {
+  clearSelectedFilters,
+  setBrand,
+  setMaxPrice,
+  setMinPrice,
+} from '@screens/Home/components/SearchInputNew/request/filterSlice';
+import {
+  clearFilterData,
+  getCategoryWithSlugRequest,
+} from '@screens/Home/components/SearchInputNew/request/getCategoryWithSlugSlice';
 import {getBrandsRequest} from '@screens/Home/components/SearchInputNew/request/getBrandsSlice';
 import {
   clearSearchData,
   searchRequest,
   setSearchValue,
 } from '@screens/Home/components/SearchInputNew/request/searchSlice';
+import PriceRange from '../PriceRange';
+import DropdownDiscount from '../DropdownDiscount';
+import FilterSvg from '@screens/Search/assets/FilterSvg';
+import sort_types from '@screens/Search/data/sort_types';
 
 const _drawerWith = RW(300);
 
@@ -51,7 +56,7 @@ const DrawerFilter = () => {
   const currentLanguage = useSelector(({main}) => main.currentLanguage);
   const {height: screenHeight} = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const {searchValue, showDrawerFilter, categories, salePage} = useSelector(
+  const {searchValue, showDrawerFilter, salePage} = useSelector(
     ({searchSlice}) => searchSlice,
   );
 
@@ -62,14 +67,15 @@ const DrawerFilter = () => {
   );
 
   const drawerAnimation = useSharedValue(-_drawerWith);
-  const backgroungAnimation = useSharedValue(0);
+  const backgroundAnimation = useSharedValue(0);
+  const navigation = useNavigation();
 
   const dispatch = useDispatch();
   const {t} = useTranslation();
 
   useEffect(() => {
     if (+!!showDrawerFilter * -_drawerWith === drawerAnimation.value) {
-      backgroungAnimation.value = withTiming(+!backgroungAnimation.value, {
+      backgroundAnimation.value = withTiming(+!backgroundAnimation.value, {
         duration: 100,
       });
       drawerAnimation.value = withTiming(+!showDrawerFilter * -_drawerWith, {
@@ -83,7 +89,7 @@ const DrawerFilter = () => {
         }, 100);
       }
     }
-  }, [backgroungAnimation, drawerAnimation, showBackground, showDrawerFilter]);
+  }, [backgroundAnimation, drawerAnimation, showBackground, showDrawerFilter]);
 
   const interpolatedDrawerAnimation = useAnimatedStyle(() => {
     return {
@@ -100,7 +106,6 @@ const DrawerFilter = () => {
       ),
     };
   });
-  const navigation = useNavigation();
 
   const searchFunc = useCallback(
     async (value, closeFilter) => {
@@ -136,6 +141,7 @@ const DrawerFilter = () => {
             brand: result.brand?.id ? [result.brand] : undefined,
             page: 1,
             fs: String(result.search),
+            sort_by,
           }),
         )
           .unwrap()
@@ -154,7 +160,7 @@ const DrawerFilter = () => {
             maxPrice: undefined,
             minPrice: undefined,
             page: 1,
-            sort_by: undefined,
+            sort_by,
           }),
         )
           .unwrap()
@@ -216,16 +222,7 @@ const DrawerFilter = () => {
   }
 
   return (
-    <View
-      // eslint-disable-next-line react-native/no-inline-styles
-      style={{
-        position: 'absolute',
-        width: '100%',
-        height: '100%',
-        zIndex: 999999,
-        flex: 1,
-      }}
-      pointerEvents="box-none">
+    <View>
       <Animated.View
         style={[
           styles.container,
@@ -235,21 +232,13 @@ const DrawerFilter = () => {
           },
           interpolatedBackgroundAnimation,
         ]}>
-        <Pressable
-          // eslint-disable-next-line react-native/no-inline-styles
-          style={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-          }}
-          onPress={() => {
-            searchFunc('', true);
-          }}
-          pointerEvents="auto">
-          <Animated.View style={[styles.main, interpolatedDrawerAnimation]}>
-            <ScrollView
-              contentContainerStyle={{paddingBottom: RH(100)}}
-              showsVerticalScrollIndicator={false}>
+        <Animated.View style={[styles.main, interpolatedDrawerAnimation]}>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View
+              style={{
+                minHeight:
+                  Dimensions.get('window').height - (150 + insets.bottom),
+              }}>
               {typeof showDrawerFilter === 'boolean' && (
                 <TextInput
                   allowFontScaling={false}
@@ -264,7 +253,7 @@ const DrawerFilter = () => {
                 />
               )}
 
-              {/* <Dropdown
+              <Dropdown
                 icon={
                   <View style={styles.filterIcon}>
                     <FilterSvg width={RW(18)} />
@@ -272,9 +261,9 @@ const DrawerFilter = () => {
                 }
                 currentData={sort_types}
                 opened={showDrawerFilter === 'sort'}
-              /> */}
+              />
 
-              {/* {(typeof showDrawerFilter === 'boolean' ||
+              {(typeof showDrawerFilter === 'boolean' ||
                 showDrawerFilter === 'categories') && (
                 <Dropdown
                   title={t('Category')}
@@ -283,29 +272,32 @@ const DrawerFilter = () => {
                   category={true}
                   opened={showDrawerFilter === 'categories'}
                 />
-              )} */}
+              )}
 
-              {/* {(typeof showDrawerFilter === 'boolean' ||
+              {(typeof showDrawerFilter === 'boolean' ||
                 showDrawerFilter === 'price') && (
                 <PriceRange searchFunc={searchFunc} />
               )}
+
               {(typeof showDrawerFilter === 'boolean' ||
                 showDrawerFilter === 'discount') && (
                 <DropdownDiscount searchFunc={searchFunc} />
-              )} */}
-
-              {(typeof showDrawerFilter === 'boolean' ||
-                (showDrawerFilter === 'color' &&
-                  searchPageData?.color?.length > 0)) && (
-                <Dropdown
-                  key={searchPageData?.color?.color?.id}
-                  title={t('color')}
-                  currentData={searchPageData?.color}
-                  multiSelect
-                  color={true}
-                  opened={showDrawerFilter === searchPageData.color?.color?.id}
-                />
               )}
+
+              {/* {(typeof showDrawerFilter === 'boolean' ||
+                  (showDrawerFilter === 'color' &&
+                    searchPageData?.color?.length > 0)) && (
+                  <Dropdown
+                    key={searchPageData?.color?.color?.id}
+                    title={t('color')}
+                    currentData={searchPageData?.color}
+                    multiSelect
+                    color={true}
+                    opened={
+                      showDrawerFilter === searchPageData.color?.color?.id
+                    }
+                  />
+                )} */}
               {(typeof showDrawerFilter === 'boolean' ||
                 showDrawerFilter === 'brands') && (
                 <Dropdown
@@ -317,7 +309,6 @@ const DrawerFilter = () => {
                 />
               )}
               {getCategoryWithSlugData?.filters?.map((item, index) => {
-                console.log('📢 [index.js:327]', item, 'item');
                 return (
                   <Dropdown
                     key={index}
@@ -328,54 +319,81 @@ const DrawerFilter = () => {
                   />
                 );
               })}
-              <Row
-                style={{
-                  ...styles.btnsRow,
-                  ...{
-                    marginTop: 20,
-                  },
-                }}>
-                <TouchableOpacity
-                  onPress={() => {
-                    // dispatch(setInnerPending(true));
-                    dispatch(clearActiveFilters());
-                    if (salePage) {
-                      dispatch(
-                        filterForSalePage({
-                          slug: searchedSlug,
-                          params: {},
-                          navigation,
-                          category: true,
-                        }),
-                      );
-                    } else {
-                      dispatch(
-                        getSearchPageInfo({
-                          slug: searchedSlug,
-                          params: {},
-                          navigation,
-                          category: true,
-                        }),
-                      );
-                    }
+            </View>
+            <Row
+              style={{
+                ...styles.btnsRow,
+                ...{
+                  marginTop: 20,
+                  marginBottom: insets.bottom,
+                },
+              }}>
+              <TouchableOpacity
+                onPress={() => {
+                  dispatch(clearSelectedFilters());
+                  dispatch(clearFilterData());
+                  dispatch(clearSearchData());
+                  dispatch(
+                    setMaxPrice(getCategoryWithSlugData.originalMaxPrice),
+                  );
+                  dispatch(
+                    setMinPrice(getCategoryWithSlugData.originalMinPrice),
+                  );
 
-                    dispatch(setShowDrawerFilter(false));
-                  }}
-                  style={styles.deleteBtn}>
-                  <Text allowFontScaling={false} style={styles.btnText}>
-                    {t('delete')}
-                  </Text>
-                </TouchableOpacity>
-                {/* <TouchableOpacity style={styles.saveBtn} onPress={searchFunc}>
+                  if (salePage) {
+                    dispatch(
+                      filterForSalePage({
+                        slug: searchedSlug,
+                        params: {},
+                        navigation,
+                        category: true,
+                      }),
+                    );
+                  } else {
+                    dispatch(
+                      getCategoryWithSlugRequest({
+                        slug: getCategoryWithSlugData.category.slug,
+                        brand: [],
+                        manufacture: [],
+                        maxPrice: getCategoryWithSlugData.originalMaxPrice,
+                        minPrice: getCategoryWithSlugData.originalMinPrice,
+                        page: 1,
+                        sort_by,
+                      }),
+                    );
+                  }
+
+                  dispatch(setShowDrawerFilter(false));
+                }}
+                style={styles.deleteBtn}>
+                <Text allowFontScaling={false} style={styles.btnText}>
+                  {t('delete')}
+                </Text>
+              </TouchableOpacity>
+              {/* <TouchableOpacity style={styles.saveBtn} onPress={searchFunc}>
                   <Text allowFontScaling={false} style={styles.btnText}>
                     {t('filter2')}
                   </Text>
                 </TouchableOpacity> */}
-              </Row>
-            </ScrollView>
-          </Animated.View>
-        </Pressable>
+            </Row>
+          </ScrollView>
+        </Animated.View>
       </Animated.View>
+
+      {drawerAnimation.value <= 0 && (
+        <TouchableOpacity
+          style={[
+            styles.closeView,
+            {
+              width: Dimensions.get('window').width - _drawerWith,
+              height: Dimensions.get('window').height,
+            },
+          ]}
+          onPress={() => {
+            searchFunc('', true);
+          }}
+        />
+      )}
     </View>
   );
 };
@@ -404,10 +422,6 @@ const styles = StyleSheet.create({
   },
   btnsRow: {
     width: '100%',
-    // position: 'absolute',
-    // zIndex: 2,
-    // left: 0,
-    // backgroundColor: 'red',
     justifyContent: 'center',
     columnGap: RW(5),
   },
@@ -440,5 +454,10 @@ const styles = StyleSheet.create({
     borderWidth: RW(1),
     maxWidth: RW(250),
     ...font('regular', 12, 'rgba(40, 40, 40, 0.60)'),
+  },
+  closeView: {
+    position: 'absolute',
+    right: 0,
+    zIndex: 10,
   },
 });

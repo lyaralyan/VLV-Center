@@ -56,7 +56,7 @@ export const getCategoryWithSlugRequest = createAsyncThunk(
       payload.page = page;
     }
     if (sort_by) {
-      payload.s = sort_by;
+      payload.s = sort_by.value;
     }
     if (discount) {
       payload.d = discount;
@@ -84,7 +84,6 @@ export const getCategoryWithSlugRequest = createAsyncThunk(
     }
     payload.session_id = deviceId;
 
-    console.log('📢 [getCategoryWithSlugSlice.js:89]', payload, 'payload');
     if (concatSelected) {
       payload.a = concatSelected;
     }
@@ -96,7 +95,7 @@ export const getCategoryWithSlugRequest = createAsyncThunk(
         payload,
         'https://v1.vlv.am/api/',
       );
-      console.log('📢 [getCategoryWithSlugSlice.js:99]', response, 'response');
+
       return response;
     } catch (error) {
       console.error(
@@ -123,8 +122,8 @@ const getCategoryWithSlugSlice = createSlice({
         category: {id: 0, name_hy: '', slug: '', children: []},
         category_list: [{id: 0, name_hy: '', slug: '', children: []}],
         totalPages: 0,
-        maxPrice: '',
-        minPrice: '',
+        maxPrice: undefined,
+        minPrice: undefined,
         brandList: [],
         originalMaxPrice: '',
         originalMinPrice: '',

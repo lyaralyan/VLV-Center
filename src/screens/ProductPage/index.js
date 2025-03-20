@@ -56,6 +56,7 @@ import {STORAGE_URL} from '@env';
 import useProductPrice from '@helpers/useProductPrice';
 import FastImage from 'react-native-fast-image';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {getCategoryWithSlugRequest} from '@screens/Home/components/SearchInputNew/request/getCategoryWithSlugSlice';
 
 export default function ProductPage(props) {
   const bottomSheetRef = useRef();
@@ -76,6 +77,12 @@ export default function ProductPage(props) {
   const productId = props.route.params?.productId;
   const snapPoints = useMemo(() => ['50%'], []);
   const calculatePrice = useProductPrice();
+  const {getCategoryWithSlugData} = useSelector(
+    ({getCategoryWithSlugSlice}) => getCategoryWithSlugSlice,
+  );
+  const {discount, maxPrice, minPrice, sort_by} = useSelector(
+    ({filterSlice}) => filterSlice,
+  );
 
   const promoPrice = useMemo(
     () =>
@@ -84,11 +91,11 @@ export default function ProductPage(props) {
     [productInfo],
   );
 
-  const finalDiscountedPrice = calculatePrice({
-    product_id: productInfo?.skus?.[0]?.product_id,
+  const {finalPrice, appliedDiscount, isDiscountApplied} = calculatePrice({
+    product_id: productInfo?.product_id,
     category_id: productInfo?.categories?.[0]?.id,
     brand_id: productInfo?.brand?.id,
-    price: promoPrice || productInfo?.skus?.[0]?.selling_price,
+    price: productInfo?.skus[0]?.selling_price,
     promoPrice,
   });
 
@@ -99,14 +106,14 @@ export default function ProductPage(props) {
     });
     dispatch(getProductInfo(productId));
     dispatch(getSimilarProducts(productId));
-  }, [productId]);
+  }, [dispatch, productId]);
 
   useEffect(() => {
     if (productInfo?.skus[0].product_id) {
       dispatch(getRelatedProducts(productInfo?.skus[0].product_id));
       dispatch(getRecentProducts(productInfo?.skus[0].product_id));
     }
-  }, [productInfo]);
+  }, [dispatch, productInfo]);
 
   const renderBackdrop = useCallback(backdropProps => {
     return (
@@ -162,7 +169,21 @@ export default function ProductPage(props) {
               paddingHorizontal: RW(10),
               paddingVertical: RH(5),
             }}
-            onPress={() => navigation.goBack()}>
+            onPress={() => {
+              dispatch(
+                getCategoryWithSlugRequest({
+                  brand: [],
+                  slug: getCategoryWithSlugData.category.slug,
+                  manufacture: [],
+                  discount,
+                  maxPrice,
+                  minPrice,
+                  page: 1,
+                  sort_by,
+                }),
+              );
+              navigation.goBack();
+            }}>
             <BackArrowSvg />
           </Pressable>
           <View style={styles.headerRightBlock}>
@@ -238,7 +259,7 @@ export default function ProductPage(props) {
           guaranty={productInfo?.guaranty}
         />
         <View style={styles.wrapper}>
-          <Row style={{justifyContent: 'space-between', marginBottom: RH(25)}}>
+          <Row style={styles.row}>
             <Image style={styles.brandLogo} url={productInfo?.brand?.logo} />
             <Row>
               <Text allowFontScaling={false} style={styles.sku}>
@@ -266,7 +287,7 @@ export default function ProductPage(props) {
             </View>
           )}
           <Row>
-            {!!productInfo?.average_price ? (
+            {productInfo?.average_price ? (
               <View>
                 <Text allowFontScaling={false} style={styles.averagePrice}>
                   {t('average_price')}
@@ -281,34 +302,30 @@ export default function ProductPage(props) {
             ) : (
               <View />
             )}
-            <View style={{flexDirection: 'row', columnGap: RW(5)}}>
-              {/* {finalDiscountedPrice &&
-              finalDiscountedPrice < productInfo?.skus[0].selling_price ? (
-                <View style={{alignSelf: 'flex-end', alignItems: 'flex-end'}}>
-
+            <View style={styles.priceWrapper}>
+              {finalPrice && finalPrice < productInfo?.skus[0].selling_price ? (
+                <View style={styles.flexEnd}>
                   <Text allowFontScaling={false} style={styles.promoPrice}>
                     {UseCalcPrice(
-                      finalDiscountedPrice ||
-                        promoPrice -
+                      finalPrice ||
+                        productInfo?.skus?.[0]?.selling_price -
                           (!installingOn ? productInfo?.installing_price : 0),
                       currentCurrency,
                     )}
                   </Text>
 
-                  <View>
-
+                  {/* <View>
                     <Text allowFontScaling={false} style={[styles.price]}>
                       {UseCalcPrice(
-                        (productInfo?.skus[0]?.promo_price ??
-                          productInfo?.skus[0].selling_price) -
+                        productInfo?.skus[0].selling_price -
                           (!installingOn ? productInfo?.installing_price : 0),
                         currentCurrency,
                       )}
                     </Text>
                     <View style={styles.priceLine} />
-                  </View>
+                  </View> */}
                 </View>
-              ) : ( */}
+              ) : (
                 <Text allowFontScaling={false} style={[styles.price]}>
                   {UseCalcPrice(
                     productInfo?.skus[0].selling_price -
@@ -316,8 +333,8 @@ export default function ProductPage(props) {
                     currentCurrency,
                   )}
                 </Text>
-              {/* )} */}
-              {!!finalDiscountedPrice && (
+              )}
+              {isDiscountApplied && (
                 <View style={styles.mobileDiscount}>
                   <FastImage
                     style={styles.mobileDiscountImg}
@@ -327,13 +344,7 @@ export default function ProductPage(props) {
                   <Text
                     allowFontScaling={false}
                     style={styles.mobileDiscountText}>
-                    {UseCalcPrice(
-                      finalDiscountedPrice -
-                        (productInfo?.skus?.[0]?.promo_price ??
-                          productInfo?.skus?.[0]?.selling_price),
-
-                      currentCurrency,
-                    )}
+                    {UseCalcPrice(appliedDiscount, currentCurrency)}
                     {'\n'}
                     {t('discount')}
                   </Text>
@@ -360,9 +371,9 @@ export default function ProductPage(props) {
                   currentCurrency,
                 )} */}
                 {UseCalcPrice(
-                  productInfo?.cash_price
-                    ? productInfo?.cash_price
-                    : productInfo?.skus[0].selling_price,
+                  finalPrice ??
+                    productInfo?.cash_price ??
+                    productInfo?.skus[0].selling_price,
                   currentCurrency,
                 )}
               </Text>
@@ -374,7 +385,7 @@ export default function ProductPage(props) {
               </Text>
               <Text allowFontScaling={false} style={styles.creditPrice}>
                 {credit36Month(
-                  productInfo?.skus[0].selling_price,
+                  finalPrice || productInfo?.skus?.[0]?.selling_price,
                   false,
                   currentCurrency,
                 )}
@@ -387,7 +398,7 @@ export default function ProductPage(props) {
               </Text>
               <Text allowFontScaling={false} style={styles.creditPrice}>
                 {credit24Month(
-                  productInfo?.skus[0].selling_price,
+                  finalPrice || productInfo?.skus?.[0]?.selling_price,
                   false,
                   currentCurrency,
                 )}
@@ -400,7 +411,7 @@ export default function ProductPage(props) {
               </Text>
               <Text allowFontScaling={false} style={styles.creditPrice}>
                 {credit12Month(
-                  productInfo?.skus[0].selling_price,
+                  finalPrice || productInfo?.skus?.[0]?.selling_price,
                   false,
                   currentCurrency,
                 )}
@@ -452,9 +463,7 @@ export default function ProductPage(props) {
                 dispatch(
                   addCardStore({
                     ...productInfo,
-                    price:
-                      finalDiscountedPrice ||
-                      productInfo?.skus[0].selling_price,
+                    price: finalPrice || productInfo?.skus[0].selling_price,
                     qty: count,
                     installing_is_on: installingOn,
                   }),
@@ -493,8 +502,9 @@ export default function ProductPage(props) {
                   type: 'error',
                   text1: 'No image',
                 });
-                return null;
+                return;
               }
+
               dispatch(
                 setShowCamera({
                   type: 'product',
@@ -515,17 +525,19 @@ export default function ProductPage(props) {
             {t('character')}
           </Text>
           {productInfo?.variations.map((item, index) => {
-            if (index > 5 && !showMoreAtributes) return null;
+            if (index > 5 && !showMoreAtributes) {
+              return null;
+            }
             if (
               item?.attribute?.['name_' + currentLanguage] &&
               item?.attribute_value?.['value_' + currentLanguage]
-            )
+            ) {
               return (
                 <Row style={styles.infoRow} key={index}>
                   <Text allowFontScaling={false} style={styles.infoRowKey}>
                     {item?.attribute?.['name_' + currentLanguage]}
                   </Text>
-                  <View style={{flex: 1, marginHorizontal: RW(5)}}>
+                  <View style={styles.mh}>
                     <DashedLine
                       dashLength={5}
                       dashThickness={1}
@@ -540,6 +552,7 @@ export default function ProductPage(props) {
                   </Text>
                 </Row>
               );
+            }
           })}
           {productInfo?.variations.length > 5 ? (
             <Pressable onPress={() => setShowMoreAtributes(!showMoreAtributes)}>
@@ -555,7 +568,7 @@ export default function ProductPage(props) {
           dashColor="rgba(0, 0, 0, 0.25)"
         />
         <View style={styles.grayWrapper}>
-          <Row style={{justifyContent: 'space-between'}}>
+          <Row style={styles.between}>
             <Pressable
               onPress={() => {
                 setShowBottomSheet('online_price');
@@ -590,7 +603,7 @@ export default function ProductPage(props) {
         {!!relatedProducts?.related_categories?.length &&
           Object.keys(relatedProducts?.related_categories_products || {})
             ?.length && <RelatedProducts data={relatedProducts} />}
-        <View style={{height: 130}} />
+        <View style={styles.h130} />
       </ScrollView>
       <BottomSheet
         ref={bottomSheetRef}
@@ -625,6 +638,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  h130: {
+    height: 130,
+  },
   header: {
     paddingHorizontal: RW(15),
     justifyContent: 'space-between',
@@ -637,6 +653,10 @@ const styles = StyleSheet.create({
   wrapper: {
     paddingHorizontal: RW(15),
     paddingVertical: RH(20),
+  },
+  row: {
+    justifyContent: 'space-between',
+    marginBottom: RH(25),
   },
   brandLogo: {
     height: RH(33),
@@ -767,6 +787,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: RW(15),
     paddingVertical: RH(20),
   },
+  between: {
+    justifyContent: 'space-between',
+  },
   descriptionTitle: {
     marginBottom: RH(15),
     textTransform: 'uppercase',
@@ -776,6 +799,10 @@ const styles = StyleSheet.create({
     width: '100%',
     justifyContent: 'space-between',
     marginVertical: RH(4),
+  },
+  mh: {
+    flex: 1,
+    marginHorizontal: RW(5),
   },
   infoRowKey: {
     ...font('bold', 10, 'rgba(40, 40, 40, 0.60)'),
@@ -841,6 +868,14 @@ const styles = StyleSheet.create({
     top: RH(6.8),
     transform: 'rotate(-7deg)',
     left: 0,
+  },
+  priceWrapper: {
+    flexDirection: 'row',
+    columnGap: RW(5),
+  },
+  flexEnd: {
+    alignSelf: 'flex-end',
+    alignItems: 'flex-end',
   },
   promoPrice: {
     ...font('bold', 20, Colors.red),

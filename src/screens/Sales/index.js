@@ -16,11 +16,13 @@ const Sales = () => {
 
   const dispatch = useDispatch();
   const {t} = useTranslation();
-  useEffect(() => {
-    if (!Object.keys(sales || {}).length) dispatch(getSales());
-  }, []);
-
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    if (!Object.keys(sales || {}).length) {
+      dispatch(getSales());
+    }
+  }, [dispatch, sales]);
 
   return (
     <ScrollView
@@ -30,7 +32,7 @@ const Sales = () => {
       <FlatList
         data={sales.slice(0, showedSales)}
         numColumns={2}
-        keyExtractor={(item, index) => `key-${index}`}
+        keyExtractor={(_, index) => `key-${index}`}
         pagingEnabled
         contentContainerStyle={{
           rowGap: RH(15),

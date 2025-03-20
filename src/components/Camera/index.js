@@ -1,8 +1,8 @@
+/* eslint-disable react-native/no-inline-styles */
 import {
   Alert,
   Dimensions,
   Linking,
-  PermissionsAndroid,
   Pressable,
   StyleSheet,
   Text,
@@ -89,7 +89,7 @@ const CameraBottomSheet = () => {
           );
         });
     }
-  }, [showCamera, hasPermission]);
+  }, [showCamera, hasPermission, requestPermission]);
 
   const codeScannerFunc = useCallback(
     codes => {
@@ -110,7 +110,7 @@ const CameraBottomSheet = () => {
         }
       }
     },
-    [showCamera],
+    [dispatch, navigation, showCamera],
   );
   const codeScanner = useCodeScanner({
     codeTypes: ['qr', 'ean-13'],
@@ -141,26 +141,20 @@ const CameraBottomSheet = () => {
             </Text>
           </View>
         ) : (
-          <Camera
-            style={[
-              styles.camera,
-              showCamera?.type !== 'product' && {
-                flex: 1,
-                justifyContent: 'center',
-                alignItems: 'center',
-                paddingBottom: RH(20),
-              },
-            ]}
-            device={device}
-            isActive={!!showCamera}
-            {...(showCamera && showCamera?.type !== 'product'
-              ? {codeScanner}
-              : {})}>
+          <View style={styles.cameraWrapper}>
+            <Camera
+              style={[styles.camera]}
+              device={device}
+              isActive={!!showCamera}
+              {...(showCamera && showCamera?.type !== 'product'
+                ? {codeScanner}
+                : {})}
+            />
             {showCamera?.type === 'product' ? (
-              <>
+              <View style={styles.product}>
                 <Pressable
                   onPress={() => {
-                    if (rotation == 270) {
+                    if (rotation === 270) {
                       setRotation(0);
                     } else {
                       setRotation(rotation + 90);
@@ -171,26 +165,24 @@ const CameraBottomSheet = () => {
                 </Pressable>
                 <ImageZoom
                   cropWidth={Dimensions.get('window').width}
-                  cropHeight={Dimensions.get('window').height - RH(200)}
-                  imageWidth={RW(200)}
-                  imageHeight={RH(200)}>
-                  <View>
-                    <FastImage
-                      resizeMode="contain"
-                      source={{uri: showCamera?.image}}
-                      style={{
-                        width: RW(200),
-                        height: RH(200),
-                        transform: [{rotate: rotation + 'deg'}],
-                      }}
-                    />
-                  </View>
+                  cropHeight={'90%'}
+                  imageWidth={RW(300)}
+                  imageHeight={RH(300)}>
+                  <FastImage
+                    resizeMode="contain"
+                    source={{uri: showCamera?.image}}
+                    style={{
+                      width: RW(300),
+                      height: RH(300),
+                      transform: [{rotate: rotation + 'deg'}],
+                    }}
+                  />
                 </ImageZoom>
-              </>
+              </View>
             ) : (
               <QRBorderSvg />
             )}
-          </Camera>
+          </View>
         )}
       </BottomSheetView>
     </BottomSheet>
@@ -203,5 +195,15 @@ const styles = StyleSheet.create({
   camera: {
     ...StyleSheet.absoluteFill,
     flex: 1,
+  },
+  cameraWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  product: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

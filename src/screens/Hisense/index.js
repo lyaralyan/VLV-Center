@@ -136,9 +136,11 @@ const Hisense = () => {
         activeId={activeId2}
       />
       <GridProducts
-        products={hisense.products_third_slider.filter(
-          item => item.product.categories[0].id === activeId2,
-        )}
+        products={{
+          products: hisense.products_third_slider.filter(
+            item => item.product.categories[0].id === activeId2,
+          ),
+        }}
       />
       <View style={styles.wrapper}>
         <RenderHTML

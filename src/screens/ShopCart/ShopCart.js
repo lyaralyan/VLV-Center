@@ -47,27 +47,60 @@ const ShopCart = () => {
       const basePrice = product?.seller_product?.skus?.[0]?.selling_price || 0;
       const promoPrice = product?.seller_product?.promo_price || basePrice;
 
-      const discountedPrice = calculatePrice({
+      const {finalPrice} = calculatePrice({
         product_id: product?.seller_product?.product_id,
-        category_id:
-          product?.seller_product?.categories?.[0]?.laravel_through_key,
+        category_id: product?.seller_product?.categories?.[0]?.id,
         brand_id: product?.seller_product?.product?.brand?.id,
-        price: basePrice,
+        price: promoPrice,
         promoPrice,
       });
 
-      const discountPerProduct = (basePrice - discountedPrice) * qty;
+      const discountPerProduct = (basePrice - finalPrice) * qty;
+
       return (
         totalDiscount + (!isNaN(discountPerProduct) ? discountPerProduct : 0)
       );
     }, 0);
-  }, [cartProducts, cartCount, calculatePrice]);
+  }, [cartProducts, calculatePrice]);
+
+  const totalBonus = useMemo(() => {
+    return cartProducts.reduce((totalDiscount, product) => {
+      const qty = product?.qty || 1;
+      const basePrice = product?.seller_product?.skus?.[0]?.selling_price || 0;
+      const promoPrice = product?.seller_product?.promo_price || basePrice;
+
+      const {appliedDiscount} = calculatePrice({
+        product_id: product?.seller_product?.product_id,
+        category_id: product?.seller_product?.categories?.[0]?.id,
+        brand_id: product?.seller_product?.product?.brand?.id,
+        price: promoPrice,
+        promoPrice,
+      });
+
+      const discountPerProduct = appliedDiscount * qty;
+
+      return (
+        totalDiscount + (!isNaN(discountPerProduct) ? discountPerProduct : 0)
+      );
+    }, 0);
+  }, [cartProducts, calculatePrice]);
 
   const finalTotalPrice = useMemo(() => {
     const baseTotalPrice = cartProducts.reduce((sum, product) => {
       const qty = product?.qty || 1;
       const basePrice = product?.seller_product?.skus?.[0]?.selling_price || 0;
-      return sum + basePrice * qty;
+      const promoPrice = product?.seller_product?.promo_price || basePrice;
+
+      const {appliedDiscount} = calculatePrice({
+        product_id: product?.seller_product?.product_id,
+        category_id: product?.seller_product?.categories?.[0]?.id,
+        brand_id: product?.seller_product?.product?.brand?.id,
+        price: promoPrice,
+        promoPrice,
+      });
+
+      // return sum + basePrice - appliedDiscount * qty;
+      return sum + (basePrice - appliedDiscount) * qty;
     }, 0);
 
     const validDiscountAmount = !isNaN(totalDiscountedAmount)
@@ -75,10 +108,10 @@ const ShopCart = () => {
       : 0;
 
     return Math.max(0, baseTotalPrice - validDiscountAmount);
-  }, [cartProducts, totalDiscountedAmount, cartCount]);
+  }, [calculatePrice, cartProducts, totalDiscountedAmount]);
 
   return (
-    <View style={{paddingTop: insets.top, flex: 1}}>
+    <View style={[styles.container, {paddingTop: insets.top}]}>
       <ScrollView
         style={styles.container}
         contentContainerStyle={{
@@ -128,7 +161,7 @@ const ShopCart = () => {
           />
 
           <View style={styles.wrapper}>
-            {!!totalDiscountedAmount && (
+            {totalDiscountedAmount > 0 && (
               <Row style={styles.textRow}>
                 <Text
                   allowFontScaling={false}
@@ -139,6 +172,20 @@ const ShopCart = () => {
                   allowFontScaling={false}
                   style={[styles.boldText, styles.redText]}>
                   -{UseCalcPrice(totalDiscountedAmount, currentCurrency)}
+                </Text>
+              </Row>
+            )}
+            {totalBonus > 0 && (
+              <Row style={styles.textRow}>
+                <Text
+                  allowFontScaling={false}
+                  style={[styles.text, styles.redText]}>
+                  {t('Bonus')}
+                </Text>
+                <Text
+                  allowFontScaling={false}
+                  style={[styles.boldText, styles.redText]}>
+                  -{UseCalcPrice(totalBonus, currentCurrency)}
                 </Text>
               </Row>
             )}

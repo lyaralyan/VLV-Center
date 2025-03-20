@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import React, {memo, useEffect, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
-import {setOpenMenu, setPending} from '@store/MainSlice';
+import {setOpenMenu} from '@store/MainSlice';
 import SearchInput from '@screens/Home/components/SearchInputNew/SearchInput';
 import {RH, RW, font} from '@theme/utils';
 import {SvgUri} from 'react-native-svg';
@@ -22,10 +22,12 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import {getDynamicPageInfo, getSearchPageInfo} from '@store/SearchPageSlice';
+import {getDynamicPageInfo} from '@store/SearchPageSlice';
 import {useNavigation} from '@react-navigation/native';
 import CloseSvg from '@assets/SVG/CloseSvg';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {getCategoryWithSlugRequest} from '@screens/Home/components/SearchInputNew/request/getCategoryWithSlugSlice';
+import {setSlug} from '@screens/Home/components/SearchInputNew/request/filterSlice';
 
 const width = Dimensions.get('screen').width;
 const minLengthForBig = 9;
@@ -36,10 +38,15 @@ const Menu = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
+  const {discount, maxPrice, minPrice, sort_by} = useSelector(
+    ({filterSlice}) => filterSlice,
+  );
+
   useEffect(() => {
-    if (+openMenu * -width === menuAnimation.value)
+    if (+openMenu * -width === menuAnimation.value) {
       menuAnimation.value = withTiming(+!openMenu * -width);
-  }, [openMenu]);
+    }
+  }, [menuAnimation, openMenu]);
 
   const interpolatedMenuAnimation = useAnimatedStyle(() => {
     return {
@@ -78,11 +85,11 @@ const Menu = () => {
                 <Pressable
                   style={[
                     styles.menuItem,
-                    activeMenu == index && styles.activeMenu,
+                    activeMenu === index && styles.activeMenu,
                   ]}
                   key={index}
                   onPress={() => setActiveMenu(index)}>
-                  {activeMenu == index && (
+                  {activeMenu === index && (
                     <View style={styles.activeMenuLine} />
                   )}
                   {elm?.item?.icon?.endsWith('png') ? (
@@ -102,7 +109,7 @@ const Menu = () => {
                   <Text
                     style={[
                       styles.menuItemText,
-                      activeMenu == index && styles.activeMenuText,
+                      activeMenu === index && styles.activeMenuText,
                     ]}>
                     {elm.item['name_' + currentLanguage] ||
                       elm.item['title_' + currentLanguage]}
@@ -119,9 +126,9 @@ const Menu = () => {
               style={{maxHeight: RH(75)}}
               keyExtractor={(item, index) => `key-${index}`}
               data={
-                menuData?.[activeMenu]?.from == 'dynamic'
+                menuData?.[activeMenu]?.from === 'dynamic'
                   ? menuData?.[activeMenu]?.item?.sliders.filter(
-                      ({lang}) => lang == currentLanguage,
+                      ({lang}) => lang === currentLanguage,
                     )
                   : menuData?.[activeMenu]?.item?.category_slider_image
               }
@@ -142,8 +149,8 @@ const Menu = () => {
             />
             <Pressable
               onPress={() => {
-                dispatch(setPending(true));
-                if (menuData?.[activeMenu]?.from == 'dynamic') {
+                // dispatch(setPending(true));
+                if (menuData?.[activeMenu]?.from === 'dynamic') {
                   dispatch(
                     getDynamicPageInfo({
                       slug: menuData?.[activeMenu]?.item?.slug,
@@ -152,19 +159,26 @@ const Menu = () => {
                     }),
                   );
                 } else {
+                  dispatch(setSlug(menuData?.[activeMenu]?.item?.slug));
                   dispatch(
-                    getSearchPageInfo({
+                    getCategoryWithSlugRequest({
+                      brand: [],
                       slug: menuData?.[activeMenu]?.item?.slug,
-                      params: {},
-                      navigation,
-                      category: true,
+                      manufacture: [],
+                      discount,
+                      maxPrice,
+                      minPrice,
+                      page: 1,
+                      sort_by,
                     }),
                   );
+                  navigation.navigate('CategoryPage');
+                  dispatch(setOpenMenu(!openMenu));
                 }
               }}
               style={styles.titleBlock}>
               <Text allowFontScaling={false} style={styles.title}>
-                {menuData?.[activeMenu]?.from == 'dynamic'
+                {menuData?.[activeMenu]?.from === 'dynamic'
                   ? menuData?.[activeMenu]?.item?.['title_' + currentLanguage]
                   : menuData?.[activeMenu].item?.['name_' + currentLanguage]}
               </Text>
@@ -175,14 +189,13 @@ const Menu = () => {
               </View>
             </Pressable>
             <View style={styles.subCategories}>
-              {(menuData?.[activeMenu]?.from == 'dynamic'
+              {(menuData?.[activeMenu]?.from === 'dynamic'
                 ? Object.values(menuData?.[activeMenu]?.dynamic_category || {})
                 : menuData?.[activeMenu]?.item?.sub_categories
               )?.map((item, index) => (
                 <Pressable
                   onPress={() => {
-                    dispatch(setPending(true));
-                    if (menuData?.[activeMenu]?.from == 'dynamic') {
+                    if (menuData?.[activeMenu]?.from === 'dynamic') {
                       dispatch(
                         getDynamicPageInfo({
                           slug: menuData?.[activeMenu]?.item.slug,
@@ -192,14 +205,21 @@ const Menu = () => {
                         }),
                       );
                     } else {
+                      dispatch(setSlug(item.slug));
                       dispatch(
-                        getSearchPageInfo({
+                        getCategoryWithSlugRequest({
+                          brand: [],
                           slug: item.slug,
-                          params: {},
-                          navigation,
-                          category: true,
+                          manufacture: [],
+                          discount,
+                          maxPrice,
+                          minPrice,
+                          page: 1,
+                          sort_by,
                         }),
                       );
+                      dispatch(setOpenMenu(!openMenu));
+                      navigation.navigate('CategoryPage');
                     }
                   }}
                   style={

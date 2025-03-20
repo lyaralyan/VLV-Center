@@ -1,4 +1,5 @@
 import {
+  Alert,
   KeyboardAvoidingView,
   Linking,
   Platform,
@@ -9,7 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import Header from '@components/InnerHeader';
 import {RH, RW, font} from '@theme/utils';
 import Input from '@components/Input/Input';
@@ -38,6 +39,7 @@ import {
   setCouponAmount,
   setPromoCode,
   setShowThanksModal,
+  setShowThanksModalCash,
 } from '@store/CartSlice';
 import {setPending} from '@store/MainSlice';
 import CheckSvg from '@assets/SVG/CheckSvg';
@@ -52,8 +54,11 @@ import {useTranslation} from 'react-i18next';
 import {setOrderId, setSubmitFormTag} from '@store/SearchPageSlice';
 import BankCardSvg2 from './assets/BankCardSvg2';
 import Geolocation from '@react-native-community/geolocation';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {GOOGLE_MAP_API_KEY} from '@env';
+import useProductPrice from '@helpers/useProductPrice';
+import ThanksModalCash from './components/ThanksModalCash';
 
 const creditItems = [
   {
@@ -97,6 +102,7 @@ const CartOrder = () => {
   const [address2, setAddress2] = useState('');
   const [autocompleteKey, setAutocompleteKey] = useState(0);
   const [note, setNote] = useState('');
+  const [paymentSuccessData, setPaymentSuccessData] = useState(null);
 
   const {
     promoCode,
@@ -105,19 +111,20 @@ const CartOrder = () => {
     discountTotalPrice,
     couponAmount,
     showThanksModal,
+    showThanksModalCash,
   } = useSelector(({cart}) => cart);
 
-  const user = useSelector(({user}) => user);
-  const cardPan = useSelector(
-    ({user}) => user.userInfo?.personal_information?.pan,
-  );
+  const userInfo = useSelector(({user}) => user);
+  const cardPan = useSelector(({user}) => user.user?.personal_information?.pan);
   const currentCurrency = useSelector(({main}) => main.currentCurrency);
-
+  const insets = useSafeAreaInsets();
   const mapRef = useRef(null);
   const googlePlacesRef = useRef(null);
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const {t} = useTranslation();
+  const calculatePrice = useProductPrice();
+
   const paymentItems = [
     {
       icon: <BankCardSvg />,
@@ -206,19 +213,19 @@ const CartOrder = () => {
   }, [activeAddress]);
 
   useEffect(() => {
-    if (user.userId && !Object.keys(user?.userInfo || {}).length) {
+    if (userInfo.userId && !Object.keys(userInfo?.userInfo || {}).length) {
       dispatch(getUserInfo());
     } else {
-      if (user?.userInfo?.addresses?.[0]?.address) {
+      if (userInfo?.userInfo?.addresses?.[0]?.address) {
         setDeliveryToMyAddress(true);
-        setChoosedAdress(user?.userInfo?.addresses?.[0]?.address);
+        setChoosedAdress(userInfo?.userInfo?.addresses?.[0]?.address);
       }
-      setName(user?.userInfo?.personal_information?.first_name);
-      setLastName(user?.userInfo?.personal_information?.last_name);
-      setEmail(user?.userInfo?.personal_information?.email);
-      setPhone(user?.userInfo?.personal_information?.phone);
+      setName(userInfo?.userInfo?.personal_information?.first_name);
+      setLastName(userInfo?.userInfo?.personal_information?.last_name);
+      setEmail(userInfo?.userInfo?.personal_information?.email);
+      setPhone(userInfo?.userInfo?.personal_information?.phone);
     }
-  }, [user]);
+  }, [dispatch, userInfo]);
 
   useEffect(() => {
     if (couponAmount.amount) {
@@ -231,6 +238,7 @@ const CartOrder = () => {
       });
       dispatch(checkPromoCode(promoCode, products));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cartProducts]);
 
   const orderFunc = () => {
@@ -307,16 +315,16 @@ const CartOrder = () => {
         grand_total: totalPrice,
         sub_total: totalPrice,
         flat: address2,
-        auth: +!!user.userId,
-        auth_user_id: user.userId,
+        auth: +!!userInfo.userId,
+        auth_user_id: userInfo.userId,
         email: email,
         phone: phone,
       };
 
-      if (activePaymentType == 23) {
+      if (activePaymentType === 23) {
         sendData.gateway_id = 23;
         sendData.payment_id = 23;
-      } else if (activePaymentType == 33333) {
+      } else if (activePaymentType === 33333) {
         sendData.payment_id = 20;
         sendData.gateway_id = 20;
         // sendData.hvhh = hvhh;
@@ -325,7 +333,7 @@ const CartOrder = () => {
         dispatch(setPending(false));
         navigation.navigate('BankTransfer', sendData);
         return null;
-      } else if (typeof activePaymentType == 'number') {
+      } else if (typeof activePaymentType === 'number') {
         sendData.gateway_id = activePaymentType;
         sendData.payment_id = activePaymentType;
       } else {
@@ -344,7 +352,7 @@ const CartOrder = () => {
             dispatch(setCouponAmount({amount: 0}));
             dispatch(setPromoCode(''));
             if (e.data.order?.id) {
-              if (activePaymentType == 23) {
+              if (activePaymentType === 23) {
                 dispatch(setOrderId(e.data.order?.id));
                 dispatch(AttachBankCard(e.data.order.order_number, cardPan));
               } else if (activePaymentType === 'Vtb') {
@@ -352,7 +360,9 @@ const CartOrder = () => {
                 dispatch(setPending(false));
               } else if (activePaymentType === 1) {
                 dispatch(setPending(false));
-                dispatch(setShowThanksModal(true));
+                dispatch(setShowThanksModalCash(true));
+
+                setPaymentSuccessData(e.data);
               } else if (activePaymentType === 16) {
                 dispatch(setOrderId(e.data.order.id));
                 axiosInstance
@@ -362,9 +372,9 @@ const CartOrder = () => {
                       total: totalPrice,
                     },
                   })
-                  .then(e => {
+                  .then(err => {
                     dispatch(setPending(false));
-                    dispatch(setSubmitFormTag(e.data));
+                    dispatch(setSubmitFormTag(err.data));
                   })
                   .catch(() => {
                     Toast.show({
@@ -382,9 +392,9 @@ const CartOrder = () => {
                       total: totalPrice,
                     },
                   })
-                  .then(e => {
+                  .then(err => {
                     dispatch(setPending(false));
-                    dispatch(setSubmitFormTag(e.data));
+                    dispatch(setSubmitFormTag(err.data));
                   })
 
                   .catch(error => {
@@ -404,8 +414,8 @@ const CartOrder = () => {
                       total: totalPrice,
                     },
                   })
-                  .then(e => {
-                    if (e.data.fail) {
+                  .then(err => {
+                    if (err.data.fail) {
                       dispatch(setPending(false));
                       Toast.show({
                         type: 'error',
@@ -413,7 +423,7 @@ const CartOrder = () => {
                       });
                     } else {
                       dispatch(setPending(false));
-                      dispatch(setSubmitFormTag(e.data));
+                      dispatch(setSubmitFormTag(err.data.form));
                     }
                   });
               } else if (activePaymentType === 19) {
@@ -425,8 +435,8 @@ const CartOrder = () => {
                       total: totalPrice,
                     },
                   })
-                  .then(e => {
-                    if (e.data.fail) {
+                  .then(err => {
+                    if (err.data.fail) {
                       dispatch(setPending(false));
                       Toast.show({
                         type: 'error',
@@ -438,6 +448,7 @@ const CartOrder = () => {
                     }
                   });
               } else {
+                Alert.alert('aparik');
                 dispatch(setPending(false));
                 navigation.navigate('AgreementInfo', {
                   text: e.data.cred_info.credit_info_text,
@@ -463,11 +474,79 @@ const CartOrder = () => {
       );
     }
   };
-  const insets = useSafeAreaInsets();
+
+  const totalDiscountedAmount = useMemo(() => {
+    return cartProducts.reduce((totalDiscount, product) => {
+      const qty = product?.qty || 1;
+      const basePrice = product?.seller_product?.skus?.[0]?.selling_price || 0;
+      const promoPrice = product?.seller_product?.promo_price || basePrice;
+
+      const {finalPrice} = calculatePrice({
+        product_id: product?.seller_product?.product_id,
+        category_id: product?.seller_product?.categories?.[0]?.id,
+        brand_id: product?.seller_product?.product?.brand?.id,
+        price: promoPrice,
+        promoPrice,
+      });
+
+      const discountPerProduct = (basePrice - finalPrice) * qty;
+
+      return (
+        totalDiscount + (!isNaN(discountPerProduct) ? discountPerProduct : 0)
+      );
+    }, 0);
+  }, [cartProducts, calculatePrice]);
+
+  const totalBonus = useMemo(() => {
+    return cartProducts.reduce((totalDiscount, product) => {
+      const qty = product?.qty || 1;
+      const basePrice = product?.seller_product?.skus?.[0]?.selling_price || 0;
+      const promoPrice = product?.seller_product?.promo_price || basePrice;
+
+      const {appliedDiscount} = calculatePrice({
+        product_id: product?.seller_product?.product_id,
+        category_id: product?.seller_product?.categories?.[0]?.id,
+        brand_id: product?.seller_product?.product?.brand?.id,
+        price: promoPrice,
+        promoPrice,
+      });
+
+      const discountPerProduct = appliedDiscount * qty;
+
+      return (
+        totalDiscount + (!isNaN(discountPerProduct) ? discountPerProduct : 0)
+      );
+    }, 0);
+  }, [cartProducts, calculatePrice]);
+
+  const finalTotalPrice = useMemo(() => {
+    const baseTotalPrice = cartProducts.reduce((sum, product) => {
+      const qty = product?.qty || 1;
+      const basePrice = product?.seller_product?.skus?.[0]?.selling_price || 0;
+      const promoPrice = product?.seller_product?.promo_price || basePrice;
+
+      const {appliedDiscount} = calculatePrice({
+        product_id: product?.seller_product?.product_id,
+        category_id: product?.seller_product?.categories?.[0]?.id,
+        brand_id: product?.seller_product?.product?.brand?.id,
+        price: promoPrice,
+        promoPrice,
+      });
+
+      return sum + (basePrice - appliedDiscount) * qty;
+    }, 0);
+
+    const validDiscountAmount = !isNaN(totalDiscountedAmount)
+      ? totalDiscountedAmount
+      : 0;
+
+    return Math.max(0, baseTotalPrice - validDiscountAmount);
+  }, [calculatePrice, cartProducts, totalDiscountedAmount]);
 
   return (
     <>
       <KeyboardAvoidingView
+        // eslint-disable-next-line react-native/no-inline-styles
         style={{
           flex: 1,
         }}
@@ -516,9 +595,9 @@ const CartOrder = () => {
               autoComplete="tel"
               placeholder={t('phone_number') + ' *'}
             />
-            {!!user?.userInfo?.addresses?.length && (
+            {!!userInfo?.userInfo?.addresses?.length && (
               <View>
-                {user?.userInfo?.addresses.map((item, index) => (
+                {userInfo?.userInfo?.addresses.map((item, index) => (
                   <Pressable
                     key={index}
                     onPress={() => {
@@ -564,6 +643,7 @@ const CartOrder = () => {
                 <Row style={{marginBottom: RH(10), marginTop: RH(30)}}>
                   <Text
                     allowFontScaling={false}
+                    // eslint-disable-next-line react-native/no-inline-styles
                     style={{textTransform: 'uppercase'}}>
                     {t('Delivery in Yerevan')}
                   </Text>
@@ -575,6 +655,7 @@ const CartOrder = () => {
                 <Row>
                   <Text
                     allowFontScaling={false}
+                    // eslint-disable-next-line react-native/no-inline-styles
                     style={{textTransform: 'uppercase'}}>
                     {t('Delivery Regions')}
                   </Text>
@@ -605,13 +686,13 @@ const CartOrder = () => {
                         setAddress(details.formatted_address);
                       }}
                       query={{
-                        key: process.env.GOOGLE_MAP_API_KEY,
+                        key: GOOGLE_MAP_API_KEY,
                         language: 'en',
                       }}
                       styles={{
                         textInputContainer: {
                           alignSelf: 'center',
-                          marginBottom: RH(18),
+                          // marginBottom: RH(18),
                           width: '100%',
                           height: RH(50),
                           justifyContent: 'center',
@@ -654,6 +735,7 @@ const CartOrder = () => {
                     <MapView
                       ref={mapRef}
                       provider={PROVIDER_GOOGLE}
+                      googleMapId={GOOGLE_MAP_API_KEY}
                       style={styles.map}
                       showsMyLocationButton
                       showsUserLocation
@@ -709,14 +791,15 @@ const CartOrder = () => {
 
               <View style={styles.paymenTypes}>
                 {paymentItems.map((item, index) => {
-                  if (+totalPrice < 26000 && item.id == 100) {
+                  if (+totalPrice < 26000 && item.id === 100) {
                     return null;
                   }
+
                   return (
                     <PaymentType
-                      selected={activePaymentType == item.id}
+                      selected={activePaymentType === item.id}
                       onSelect={() => {
-                        if (item.id == 100) {
+                        if (item.id === 100) {
                           setCredit(true);
                         } else {
                           setActivePaymentType(item.id);
@@ -751,6 +834,7 @@ const CartOrder = () => {
                 </Pressable>
                 <Text
                   allowFontScaling={false}
+                  // eslint-disable-next-line react-native/no-inline-styles
                   style={[styles.payTypeTitle, {marginBottom: 0}]}>
                   {t('Installment payment')}
                 </Text>
@@ -763,18 +847,18 @@ const CartOrder = () => {
                   }
                   if (
                     totalPrice < 30000 &&
-                    (item.name === 'Vtb' ||
-                      // item.name === 'Uni' ||
-                      item.name === 'ineco')
+                    (item.name === 'Vtb' || item.name === 'ineco')
+                    // item.name === 'Uni' ||
                   ) {
                     return null;
                   }
                   if (totalPrice < 200000 && item.name === 'evoca') {
                     return null;
                   }
+
                   return (
                     <PaymentType
-                      selected={activePaymentType == item.name}
+                      selected={activePaymentType === item.name}
                       onSelect={() => setActivePaymentType(item.name)}
                       key={index}
                       data={item}
@@ -836,30 +920,40 @@ const CartOrder = () => {
               style={styles.dashLine}
             />
             <View style={styles.wrapper}>
-              <Row style={styles.textRow}>
-                <Text
-                  allowFontScaling={false}
-                  style={[styles.text, styles.redText]}>
-                  {t('discount')}
-                </Text>
-                <Text
-                  allowFontScaling={false}
-                  style={[styles.boldText, styles.redText]}>
-                  {UseCalcPrice(
-                    discountTotalPrice + couponAmount?.amount,
-                    currentCurrency,
-                  )}
-                </Text>
-              </Row>
+              {totalDiscountedAmount > 0 && (
+                <Row style={styles.textRow}>
+                  <Text
+                    allowFontScaling={false}
+                    style={[styles.text, styles.redText]}>
+                    {t('discount')}
+                  </Text>
+                  <Text
+                    allowFontScaling={false}
+                    style={[styles.boldText, styles.redText]}>
+                    -{UseCalcPrice(totalDiscountedAmount, currentCurrency)}
+                  </Text>
+                </Row>
+              )}
+              {totalBonus > 0 && (
+                <Row style={styles.textRow}>
+                  <Text
+                    allowFontScaling={false}
+                    style={[styles.text, styles.redText]}>
+                    {t('Bonus')}
+                  </Text>
+                  <Text
+                    allowFontScaling={false}
+                    style={[styles.boldText, styles.redText]}>
+                    -{UseCalcPrice(totalBonus, currentCurrency)}
+                  </Text>
+                </Row>
+              )}
               <Row style={styles.textRow}>
                 <Text allowFontScaling={false} style={[styles.boldText]}>
                   {t('total')}
                 </Text>
                 <Text allowFontScaling={false} style={[styles.boldText]}>
-                  {UseCalcPrice(
-                    totalPrice - couponAmount?.amount,
-                    currentCurrency,
-                  )}
+                  {UseCalcPrice(finalTotalPrice, currentCurrency)}
                 </Text>
               </Row>
               <Text allowFontScaling={false} style={styles.promoCodeTitle}>
@@ -927,6 +1021,34 @@ const CartOrder = () => {
         <ThanksModal
           dismiss={() => {
             dispatch(setShowThanksModal(false));
+            navigation.reset({
+              index: 0,
+              routes: [
+                {
+                  name: 'Home',
+                },
+              ],
+            });
+          }}
+        />
+      </CustomModal>
+      <CustomModal
+        visible={showThanksModalCash}
+        dismiss={() => {
+          dispatch(setShowThanksModalCash(false));
+          navigation.reset({
+            index: 0,
+            routes: [
+              {
+                name: 'Home',
+              },
+            ],
+          });
+        }}>
+        <ThanksModalCash
+          data={paymentSuccessData}
+          dismiss={() => {
+            dispatch(setShowThanksModalCash(false));
             navigation.reset({
               index: 0,
               routes: [

@@ -21,7 +21,9 @@ const Banners = ({
   resizeMode = 'contain',
 }) => {
   const scrollX = React.useRef(new Animated.Value(0)).current;
-  if (!Array.isArray(data) || !data.length) return null;
+  if (!Array.isArray(data) || !data.length) {
+    return null;
+  }
 
   return (
     <>
@@ -76,10 +78,7 @@ const Banners = ({
           borderRadius: RW(4),
           marginHorizontal: RH(4),
         }}
-        containerStyle={{
-          position: 'relative',
-          marginTop: RH(5),
-        }}
+        containerStyle={styles.containerStyle}
       />
     </>
   );
@@ -110,5 +109,9 @@ const styles = StyleSheet.create({
     width: RW(8),
     borderRadius: RW(4),
     marginHorizontal: RH(4),
+  },
+  containerStyle: {
+    position: 'relative',
+    marginTop: RH(5),
   },
 });

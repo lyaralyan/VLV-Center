@@ -1,4 +1,11 @@
-import {Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import {RH, RW, font} from '@theme/utils';
 import {useDispatch, useSelector} from 'react-redux';
@@ -19,6 +26,7 @@ import DeleteSvg from '@assets/SVG/DeleteSvg';
 import Colors from '@theme/colors';
 import {useTranslation} from 'react-i18next';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
+import {GOOGLE_MAP_API_KEY} from '@env';
 
 const MyAddresses = () => {
   const [selectedAddress, setSelectedAddress] = useState(null);
@@ -34,7 +42,6 @@ const MyAddresses = () => {
   );
   const mapRef = useRef();
   const dispatch = useDispatch();
-
   useEffect(() => {
     Geolocation.getCurrentPosition(
       position => {
@@ -82,6 +89,7 @@ const MyAddresses = () => {
       getLocationNameFromCordinates(currentLocation, e => setAddress(e));
     }
   }, [currentLocation]);
+
   useEffect(() => {
     if (selectedAddress) {
       setShowMap(false);
@@ -172,7 +180,7 @@ const MyAddresses = () => {
         error={phoneError}
       />
 
-      {!!showMap ? (
+      {showMap ? (
         <View>
           <GooglePlacesAutocomplete
             key={autocompleteKey}
@@ -191,7 +199,7 @@ const MyAddresses = () => {
               setAddress(details.formatted_address);
             }}
             query={{
-              key: process.env.GOOGLE_MAP_API_KEY,
+              key: GOOGLE_MAP_API_KEY,
               language: 'en',
             }}
             styles={styles.GooglePlacesAutocomplete}

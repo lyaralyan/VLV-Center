@@ -41,7 +41,6 @@ export class Http {
       });
       return response.data;
     } catch (error) {
-      console.error('Request failed:', error);
       throw error.response ? error.response.data : error;
     }
   }

@@ -1,5 +1,5 @@
 import {Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
-import React from 'react';
+import React, {useCallback} from 'react';
 import FilterSvg from '@screens/Search/assets/FilterSvg';
 import {RH, RW, font} from '@theme/utils';
 import Colors from '@theme/colors';
@@ -25,12 +25,14 @@ import CloseSvg from '@assets/SVG/CloseSvg';
 import {useNavigation} from '@react-navigation/native';
 import {setInnerPending} from '@store/MainSlice';
 import {getCategoryWithSlugRequest} from '@screens/Home/components/SearchInputNew/request/getCategoryWithSlugSlice';
-import {setSelectedFilters} from '@screens/Home/components/SearchInputNew/request/filterSlice';
+import {
+  setBrand,
+  setSelectedFilters,
+} from '@screens/Home/components/SearchInputNew/request/filterSlice';
 
 const Filter = () => {
   const {currentLanguage} = useSelector(({main}) => main);
   const {
-    brands,
     activeAttributes,
     activeCategories,
     activeBrands,
@@ -45,28 +47,71 @@ const Filter = () => {
   const {getCategoryWithSlugData} = useSelector(
     ({getCategoryWithSlugSlice}) => getCategoryWithSlugSlice,
   );
-  const {selectedFilters, brand, discount, maxPrice, minPrice, sort_by} =
+  const {selectedFilters, brand, discount, maxPrice, minPrice, sort_by, slug} =
     useSelector(({filterSlice}) => filterSlice);
 
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const {t} = useTranslation();
 
-  const toggleCheckbox = item => {
+  const removeBrand = useCallback(
+    brandToRemove => {
+      dispatch(setBrand(brandToRemove)); // ✅ Remove brand from Redux
+
+      // ✅ Immediately trigger API call after updating Redux
+      dispatch(
+        getCategoryWithSlugRequest({
+          slug:
+            slug ||
+            getCategoryWithSlugData?.category?.slug ||
+            getCategoryWithSlugData?.category_list[0]?.slug,
+          manufacture: selectedFilters,
+          brand: brand.filter(b => b.id !== brandToRemove.id), // ✅ Updated brand list
+          discount,
+          maxPrice,
+          minPrice,
+          page: 1,
+          sort_by,
+        }),
+      );
+    },
+    [
+      brand, // ✅ Ensures the correct updated brand list
+      dispatch,
+      discount,
+      maxPrice,
+      minPrice,
+      selectedFilters,
+      slug,
+      sort_by,
+      getCategoryWithSlugData?.category?.slug,
+      getCategoryWithSlugData?.category_list,
+    ],
+  );
+
+  const toggleCheckbox = async item => {
+    // Clone selectedFilters
     const updatedFilters = [...selectedFilters];
 
-    // Check if the item is already in selectedFilters
-    const itemIndex = updatedFilters.findIndex(val => val.id === item.id);
+    // Find the category that contains the item
+    const categoryIndex = updatedFilters.findIndex(cat =>
+      cat.values.some(val => val.id === item.id),
+    );
 
-    if (itemIndex !== -1) {
-      // ✅ Item exists → Remove it (toggle off)
-      updatedFilters.splice(itemIndex, 1);
-    } else {
-      // ✅ Item does not exist → Add it (toggle on)
-      updatedFilters.push(item);
+    if (categoryIndex !== -1) {
+      // Found the category containing the item
+      const category = {...updatedFilters[categoryIndex]};
+      category.values = category.values.filter(val => val.id !== item.id);
+
+      if (category.values.length > 0) {
+        updatedFilters[categoryIndex] = category; // Update category
+      } else {
+        updatedFilters.splice(categoryIndex, 1); // Remove category if empty
+      }
     }
 
-    dispatch(
+    // Dispatch updated filters to Redux
+    await dispatch(
       getCategoryWithSlugRequest({
         slug:
           getCategoryWithSlugData?.category?.slug ||
@@ -80,11 +125,10 @@ const Filter = () => {
         sort_by,
       }),
     );
-    // Dispatch updated filters to Redux
-    dispatch(setSelectedFilters(updatedFilters));
+    await dispatch(setSelectedFilters(updatedFilters));
   };
 
-  const isFilterSelected = selectedFilters.map(fil => fil.length);
+  const isFilterSelected = selectedFilters.map(fil => fil.values.length);
 
   return (
     <View>
@@ -129,7 +173,7 @@ const Filter = () => {
         )}
 
         {Array.isArray(getCategoryWithSlugData.category_list) &&
-          getCategoryWithSlugData.category_list?.length > 1 && (
+          getCategoryWithSlugData.category_list?.length > 0 && (
             <Pressable
               style={styles.btn}
               onPress={() => dispatch(setShowDrawerFilter('categories'))}>
@@ -290,56 +334,16 @@ const Filter = () => {
               <CloseSvg width={RW(10)} color={Colors.red} />
             </Pressable>
           ))}
-        {Array.isArray(activeBrands) &&
-          activeBrands?.length > 0 &&
-          activeBrands.map((e, index) => (
+
+        {Array.isArray(brand) &&
+          brand?.length > 0 &&
+          brand.map((e, index) => (
             <Pressable
               key={index}
               style={styles.btn}
-              onPress={() => {
-                dispatch(setInnerPending(true));
-                let data = activeBrands.filter(({id}) => {
-                  return e.id !== id;
-                });
-                dispatch(setActiveBrands(data));
-
-                const params = {
-                  ct: activeCategories,
-                  c: activeColor,
-                  b: data,
-                  mx: activeMaxPrice,
-                  mn: activeMinPrice,
-                  d: +activeDiscount,
-                  a: activeAttributes,
-                };
-                if (salePage) {
-                  dispatch(
-                    filterForSalePage({
-                      slug: searchedSlug,
-                      params,
-                      navigation,
-                      category: true,
-                    }),
-                  );
-                  dispatch(setShowDrawerFilter(false));
-                } else if (
-                  (Object.keys(last_request_params || {}).length > 0 &&
-                    JSON.stringify(last_request_params) !==
-                      JSON.stringify(params)) ||
-                  !Object.keys(last_request_params || {}).length > 0
-                ) {
-                  dispatch(
-                    getSearchPageInfo({
-                      slug: searchedSlug,
-                      params,
-                      navigation,
-                      category: true,
-                    }),
-                  );
-                }
-              }}>
+              onPress={() => removeBrand(e)}>
               <Text allowFontScaling={false} style={styles.btnText}>
-                {e?.name || brands.find(item => item.id === e)?.name || ''}
+                {e?.name || ''}
               </Text>
 
               <CloseSvg width={RW(10)} color={Colors.red} />
@@ -501,21 +505,27 @@ const Filter = () => {
             </Pressable>
           );
         })}
-        {isFilterSelected &&
-          selectedFilters?.map((e, index) => (
-            <Pressable
-              key={index}
-              style={styles.btn}
-              onPress={async () => {
-                await toggleCheckbox(e);
-              }}>
-              <Text allowFontScaling={false} style={styles.btnText}>
-                {String(e?.values[0]?.['value_' + currentLanguage] || '')}
-              </Text>
 
-              <CloseSvg width={RW(10)} color={Colors.red} />
-            </Pressable>
-          ))}
+        {isFilterSelected > 0 &&
+          selectedFilters?.map(e => {
+            return e?.values.map((element, index) => {
+              return (
+                <Pressable
+                  key={index}
+                  style={styles.btn}
+                  onPress={async () => {
+                    await toggleCheckbox(element, e);
+                  }}>
+                  <Text allowFontScaling={false} style={styles.btnText}>
+                    {String(element?.['value_' + currentLanguage] || '') ||
+                      String(element?.['name_' + currentLanguage] || '')}
+                  </Text>
+
+                  <CloseSvg width={RW(10)} color={Colors.red} />
+                </Pressable>
+              );
+            });
+          })}
       </View>
     </View>
   );

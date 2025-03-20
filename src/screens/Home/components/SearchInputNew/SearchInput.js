@@ -11,7 +11,7 @@ import {useTranslation} from 'react-i18next';
 import {clearSearchData, searchRequest} from './request/searchSlice';
 import {getCategoryWithSlugRequest} from './request/getCategoryWithSlugSlice';
 import {getBrandsRequest} from './request/getBrandsSlice';
-import {setBrand} from './request/filterSlice';
+import {setBrand, setSlug} from './request/filterSlice';
 export const searchRef = createRef();
 
 const SearchInput = ({containerStyle = {}}) => {
@@ -24,6 +24,7 @@ const SearchInput = ({containerStyle = {}}) => {
   );
 
   const onSubmit = useCallback(async () => {
+    dispatch(setSlug(''));
     if (value.trim().length === 0) {
       dispatch(clearSearchData());
       return;
@@ -61,7 +62,7 @@ const SearchInput = ({containerStyle = {}}) => {
         }),
       )
         .unwrap()
-        .then(() => {
+        .then(res => {
           navigation.navigate('SearchPage');
         });
     } else if (result?.product_id) {

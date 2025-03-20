@@ -18,7 +18,7 @@ const SaleItem = ({item, width = RW(100), height = RH(150)}) => {
       <Image
         style={[styles.image, {height}]}
         url={
-          item?.gallary_images?.find(item => item?.lang == currentLanguage)
+          item?.gallary_images?.find(elem => elem?.lang === currentLanguage)
             ?.image
         }
       />

@@ -12,6 +12,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {store} from '@store/store';
 import {StyleSheet} from 'react-native';
+import UpdateModal from '@components/UpdateModal/UpdateModal';
 
 export default function App() {
   useAppAnalytics();
@@ -19,9 +20,18 @@ export default function App() {
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaProvider>
         <Provider store={store}>
+          <UpdateModal />
           <Loader>
             <InnerLoader>
-              <NavigationContainer linking={LinkingConfig}>
+              <NavigationContainer
+                linking={LinkingConfig}
+                onStateChange={state => {
+                  if (!state) {
+                    return;
+                  }
+                  const currentRouteName = state.routes[state.index]?.name;
+                  console.log('Current Screen:', currentRouteName);
+                }}>
                 <MyApp />
                 <Toast />
               </NavigationContainer>
