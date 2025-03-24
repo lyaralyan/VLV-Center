@@ -6,11 +6,14 @@ import {useSelector} from 'react-redux';
 import {RH, RW} from '@theme/utils';
 
 const HeaderCategories = () => {
-  const {headerCategorys, currentLanguage} = useSelector(({main}) => main);
+  const {currentLanguage} = useSelector(({main}) => main);
+  const {headerCategories} = useSelector(
+    ({getHeaderCategoriesSlice}) => getHeaderCategoriesSlice,
+  );
 
   return (
     <FlatList
-      data={headerCategorys}
+      data={headerCategories}
       horizontal
       keyExtractor={(item, index) => `key-${index}`}
       showsHorizontalScrollIndicator={false}

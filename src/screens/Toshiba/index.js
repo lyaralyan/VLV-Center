@@ -11,21 +11,24 @@ import RenderHTML from 'react-native-render-html';
 import ProductsWithSlide from '@components/ProductsWithSlide';
 import GridProducts from '@components/GridProducts';
 import {useTranslation} from 'react-i18next';
-import {getBrandPageData} from '@store/MainSlice';
 import Colors from '@theme/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {getBrandPageDataRequest} from '@store/getBrandPageDataSlice';
 
 const screenWidth = Dimensions.get('screen').width;
 
 const Toshiba = () => {
-  const {toshiba, currentLanguage} = useSelector(({main}) => main);
+  const {currentLanguage} = useSelector(({main}) => main);
   const {t} = useTranslation();
   const insets = useSafeAreaInsets();
+  const {toshiba} = useSelector(
+    ({getBrandPageDataSlice}) => getBrandPageDataSlice,
+  );
 
   const dispatch = useDispatch();
   useEffect(() => {
     if (!Object.keys(toshiba || {}).length) {
-      dispatch(getBrandPageData('toshiba'));
+      dispatch(getBrandPageDataRequest('toshiba'));
     }
   }, [dispatch, toshiba]);
 

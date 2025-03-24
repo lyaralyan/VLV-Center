@@ -10,7 +10,7 @@ import {setShowCamera} from '@store/MainSlice';
 import {useTranslation} from 'react-i18next';
 import {clearSearchData, searchRequest} from './request/searchSlice';
 import {getCategoryWithSlugRequest} from './request/getCategoryWithSlugSlice';
-import {getBrandsRequest} from './request/getBrandsSlice';
+import {getBrandRequest} from './request/getBrandSlice';
 import {setBrand, setSlug} from './request/filterSlice';
 export const searchRef = createRef();
 
@@ -70,7 +70,7 @@ const SearchInput = ({containerStyle = {}}) => {
         productId: result?.product_id,
       });
     } else if (result?.brand?.id && !result?.category?.name_hy) {
-      dispatch(getBrandsRequest({brand: result?.brand?.slug}))
+      dispatch(getBrandRequest({brand: result?.brand?.slug}))
         .unwrap()
         .then(res => {
           navigation.navigate('BrandCategoriesPage');

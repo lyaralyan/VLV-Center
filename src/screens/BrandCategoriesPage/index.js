@@ -18,7 +18,7 @@ const BrandCategoriesPage = props => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const {currentLanguage} = useSelector(({main}) => main);
-  const {getBrandsData} = useSelector(({getBrandsSlice}) => getBrandsSlice);
+  const {getBrandData} = useSelector(({getBrandSlice}) => getBrandSlice);
   const {selectedFilters, discount, maxPrice, minPrice, sort_by} = useSelector(
     ({filterSlice}) => filterSlice,
   );
@@ -57,24 +57,24 @@ const BrandCategoriesPage = props => {
         marginTop: insets.top,
         paddingBottom: RH(140),
       }}>
-      <Header title={getBrandsData?.brand_info?.name} />
+      <Header title={getBrandData?.brand_info?.name} />
       <View style={styles.wrapper}>
         <View style={styles.headRow}>
-          {/* <Image url={getBrandsData?.brand_info?.logo} style={styles.logo} /> */}
-          <SvgUri uri={getBrandsData?.brand_info?.logo} style={styles.logo} />
+          {/* <Image url={getBrandData?.brand_info?.logo} style={styles.logo} /> */}
+          <SvgUri uri={getBrandData?.brand_info?.logo} style={styles.logo} />
           <Text allowFontScaling={false} style={styles.title}>
-            {getBrandsData?.brand_info?.name}
+            {getBrandData?.brand_info?.name}
           </Text>
           <View style={styles.count}>
             <Text allowFontScaling={false} style={styles.countText}>
-              {getBrandsData?.product_count}
+              {getBrandData?.product_count}
             </Text>
           </View>
         </View>
         <View style={styles.categories}>
-          {getBrandsData?.brand_categories?.map((item, index) => (
+          {getBrandData?.brand_categories?.map((item, index) => (
             <Pressable
-              onPress={() => handlePress(getBrandsData?.brand_info, item.slug)}
+              onPress={() => handlePress(getBrandData?.brand_info, item.slug)}
               style={styles.categoryItem}
               key={index}>
               <View style={styles.categoryItemImageBlock}>

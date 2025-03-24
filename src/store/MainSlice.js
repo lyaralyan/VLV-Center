@@ -7,6 +7,13 @@ import {t} from 'i18next';
 import {USER_ID, _TOKEN} from './UserSlice';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {getSalesRequest} from '@store/getSalesSlice';
+import {getFeatureCategoriesRequest} from '@store/getFeatureCategoriesSlice';
+import {getBestDealProductRequest} from '@store/getBestDealProductSlice';
+import {getBannerSlidersRequest} from '@store/getBannerSlidersSlice';
+import {getTopRatingProductRequest} from '@store/getTopRatingProductSlice';
+import {getHeaderCategoriesRequest} from './getHeaderCategoriesSlice';
+import {getThreeInOneRequest} from './getThreeInOneSlice';
 
 let DEVICE_ID = null;
 
@@ -29,15 +36,6 @@ const initialState = {
   },
   pending: false,
   innerPending: false,
-  headerCategorys: [],
-  haederSliders: [],
-  sales: [],
-  featureCategories: [],
-  bestDealProduct: [],
-  bannerSliders: [],
-  topRatingProduct: [],
-  threeInOne: null,
-  brands: [],
   productInfo: null,
   relatedProducts: [],
   recentProducts: [],
@@ -46,11 +44,6 @@ const initialState = {
   menuData: null,
   salePage: null,
   showCamera: false,
-  allBrands: [],
-  vikass: null,
-  toshiba: null,
-  hisense: null,
-  samsung: null,
   contactdata: null,
   creditPageData: null,
   faqPageData: null,
@@ -101,60 +94,7 @@ export const mainSlice = createSlice({
         innerPending: action.payload,
       };
     },
-    setHeaderCategorys: (store, action) => {
-      return {
-        ...store,
-        headerCategorys: action.payload,
-      };
-    },
-    setHeaderSliders: (store, action) => {
-      return {
-        ...store,
-        headerSliders: action.payload,
-      };
-    },
-    setSales: (store, action) => {
-      return {
-        ...store,
-        sales: action.payload,
-      };
-    },
-    setFeatureCategories: (store, action) => {
-      return {
-        ...store,
-        featureCategories: action.payload,
-      };
-    },
-    setBestDealProduct: (store, action) => {
-      return {
-        ...store,
-        bestDealProduct: action.payload,
-      };
-    },
-    setBannerSliders: (store, action) => {
-      return {
-        ...store,
-        bannerSliders: action.payload,
-      };
-    },
-    setTopRatingProduct: (store, action) => {
-      return {
-        ...store,
-        topRatingProduct: action.payload,
-      };
-    },
-    setThreeInOne: (store, action) => {
-      return {
-        ...store,
-        threeInOne: action.payload,
-      };
-    },
-    setBrands: (store, action) => {
-      return {
-        ...store,
-        brands: action.payload,
-      };
-    },
+
     setProductInfo: (store, action) => {
       return {
         ...store,
@@ -209,36 +149,7 @@ export const mainSlice = createSlice({
         showCamera: action.payload,
       };
     },
-    setAllBrands: (store, action) => {
-      return {
-        ...store,
-        allBrands: action.payload,
-      };
-    },
-    setVikass: (store, action) => {
-      return {
-        ...store,
-        vikass: action.payload,
-      };
-    },
-    setSamsung: (store, action) => {
-      return {
-        ...store,
-        samsung: action.payload,
-      };
-    },
-    setToshiba: (store, action) => {
-      return {
-        ...store,
-        toshiba: action.payload,
-      };
-    },
-    setHisense: (store, action) => {
-      return {
-        ...store,
-        hisense: action.payload,
-      };
-    },
+
     setAboutUsData: (store, action) => {
       return {
         ...store,
@@ -335,6 +246,7 @@ export const getConvertRate = id => dispatch => {
       console.warn('Error: getConvertRate', err);
     });
 };
+
 export const getMainInfo = () => async dispatch => {
   dispatch(setPending(true));
   const fcmToken = await AsyncStorage.getItem('fcmToken');
@@ -362,15 +274,14 @@ export const getMainInfo = () => async dispatch => {
   }
   if (TOKEN) {
     Promise.all([
-      dispatch(getHaedaerCategorys()),
-      dispatch(getHaedaerSliders()),
-      dispatch(getSales()),
+      dispatch(getHeaderCategoriesRequest()),
+      dispatch(getSalesRequest()),
+      dispatch(getFeatureCategoriesRequest()),
       openSignInModal(),
-      dispatch(getFeatureCategories()),
-      dispatch(getBestDealProduct()),
-      dispatch(getBannerSliders()),
-      dispatch(getTopRatingProduct()),
-      dispatch(getThreeInOne()),
+      dispatch(getBestDealProductRequest()),
+      dispatch(getBannerSlidersRequest()),
+      dispatch(getTopRatingProductRequest()),
+      dispatch(getThreeInOneRequest()),
       dispatch(getMenuData()),
       dispatch(getBuyTwoGetOneGift()),
     ]).finally(() => {
@@ -378,74 +289,7 @@ export const getMainInfo = () => async dispatch => {
     });
   }
 };
-export const getHaedaerCategorys = () => async dispatch => {
-  await axiosInstance
-    .post('/header-category', {
-      ...defaultSendData,
-      'Device-ID': DEVICE_ID,
-    })
-    .then(response => {
-      dispatch(
-        setHeaderCategorys([...response.data.Category, ...response.data.Brand]),
-      );
-    })
-    .catch(err => {
-      console.warn('Error: getHaedaerCategorys', err.request?._response);
-    });
-};
-export const getHaedaerSliders = () => async dispatch => {
-  await axiosInstance
-    .post('/header-slider', {
-      ...defaultSendData,
-      'Device-ID': DEVICE_ID,
-    })
-    .then(async response => {
-      const data = await response?.data?.Sliders;
-      dispatch(setHeaderSliders(data));
-    })
-    .catch(err => {
-      console.warn('Error: getHaedaerSliders', err.request?._response);
-    });
-};
-export const getSales = () => async dispatch => {
-  await axiosInstance
-    .post('/sales', {
-      ...defaultSendData,
-      'Device-ID': DEVICE_ID,
-    })
-    .then(async response => {
-      dispatch(setSales(response.data?.sales));
-    })
-    .catch(err => {
-      console.warn('Error: getSales', err.request?._response);
-    });
-};
-export const getThreeInOne = () => async dispatch => {
-  await axiosInstance
-    .post('/three-in-one', {
-      ...defaultSendData,
-      'Device-ID': DEVICE_ID,
-    })
-    .then(response => {
-      dispatch(setThreeInOne(response.data));
-    })
-    .catch(err => {
-      console.warn('Error: getThreeInOne', err);
-    });
-};
-export const getBrands = () => dispatch => {
-  axiosInstance
-    .post(`/brand?Device-ID=${DEVICE_ID}`, {
-      ...defaultSendData,
-      'Device-ID': DEVICE_ID,
-    })
-    .then(response => {
-      dispatch(setBrands(response.data.Brand));
-    })
-    .catch(err => {
-      console.warn('Error: getBrands', err.request?._response);
-    });
-};
+
 export const getBrandCategories = (slug, navigation) => dispatch => {
   dispatch(setPending(true));
   axiosInstance
@@ -480,68 +324,6 @@ export const getBrandCategories = (slug, navigation) => dispatch => {
     })
     .finally(() => {
       dispatch(setPending(false));
-    });
-};
-
-export const getFeatureCategories = () => async dispatch => {
-  await axiosInstance
-    .post('/feature-categories-cat', {
-      ...defaultSendData,
-      'Device-ID': DEVICE_ID,
-    })
-    .then(async response => {
-      const itemsArray = response.data.featureCategoriesCat.map(item => {
-        return {
-          title_hy: item?.name_hy,
-          title_ru: item?.name_ru,
-          title_en: item?.name_en,
-          image: item?.category_image?.image,
-          slug: item.slug,
-        };
-      });
-      dispatch(setFeatureCategories(itemsArray));
-    })
-    .catch(err => {
-      console.warn('Error: getFeatureCategories', err.request?._response);
-    });
-};
-export const getBestDealProduct = () => async dispatch => {
-  await axiosInstance
-    .post('/best-deal-product', {
-      ...defaultSendData,
-      'Device-ID': DEVICE_ID,
-    })
-    .then(response => {
-      dispatch(setBestDealProduct(response.data.bestDealProduct));
-    })
-    .catch(err => {
-      console.warn('Error: getBestDealProduct', err);
-    });
-};
-export const getBannerSliders = () => async dispatch => {
-  await axiosInstance
-    .post('/baner-slider', {
-      ...defaultSendData,
-      'Device-ID': DEVICE_ID,
-    })
-    .then(response => {
-      dispatch(setBannerSliders(response?.data?.banerSlider));
-    })
-    .catch(err => {
-      console.warn('Error: getBannerSliders', err);
-    });
-};
-export const getTopRatingProduct = () => async dispatch => {
-  await axiosInstance
-    .post('/top-rating-product', {
-      ...defaultSendData,
-      'Device-ID': DEVICE_ID,
-    })
-    .then(response => {
-      dispatch(setTopRatingProduct(response.data?.topRatingProduct));
-    })
-    .catch(err => {
-      console.warn('Error: getTopRatingProduct', err);
     });
 };
 export const getProductInfo = id => dispatch => {
@@ -648,67 +430,7 @@ export const getSalePage = id => dispatch => {
       dispatch(setPending(false));
     });
 };
-export const getAllBrands = () => dispatch => {
-  dispatch(setPending(true));
-  axiosInstance
-    .post('brands/all', {
-      ...defaultSendData,
-      'Device-ID': DEVICE_ID,
-    })
-    .then(response => {
-      if (response.data?.Brand?.length) {
-        dispatch(setAllBrands(response.data?.Brand));
-      } else {
-        throw 'Brands not found';
-      }
-    })
-    .catch(err => {
-      Toast.show({
-        type: 'error',
-        text1: err,
-      });
-      console.warn('Error: getAllBrands', err);
-    })
-    .finally(() => {
-      dispatch(setPending(false));
-    });
-};
-export const getBrandPageData = slug => async (dispatch, getState) => {
-  const data = getState().main?.[slug];
-  if (data) {
-    return null;
-  }
-  dispatch(setPending(true));
-  axiosInstance
-    .post(`brand/${slug}`, {
-      ...defaultSendData,
-      'Device-ID': DEVICE_ID,
-    })
-    .then(response => {
-      if (response.data.message) {
-        throw response.data.message;
-      }
-      if (slug == 'vikass') {
-        dispatch(setVikass(response.data));
-      } else if (slug == 'hisense') {
-        dispatch(setHisense(response.data));
-      } else if (slug == 'toshiba') {
-        dispatch(setToshiba(response.data));
-      } else if (slug == 'samsung') {
-        dispatch(setSamsung(response.data));
-      }
-    })
-    .catch(err => {
-      Toast.show({
-        type: 'error',
-        text1: err || t('error_message'),
-      });
-      console.warn('Error: getBrandPageData', err);
-    })
-    .finally(() => {
-      dispatch(setPending(false));
-    });
-};
+
 export const userSubscribe = email => () => {
   axiosInstance
     .post('/footer-subscribe', {
@@ -1038,16 +760,7 @@ export const {
   setCurrentCurrency,
   setPending,
   setInnerPending,
-  setHeaderCategorys,
-  setHeaderSliders,
   setSalesImages,
-  setSales,
-  setFeatureCategories,
-  setBestDealProduct,
-  setBannerSliders,
-  setTopRatingProduct,
-  setThreeInOne,
-  setBrands,
   setProductInfo,
   setRelatedProducts,
   setRecentProducts,
@@ -1057,11 +770,6 @@ export const {
   setMenuData,
   setSalePage,
   setShowCamera,
-  setAllBrands,
-  setHisense,
-  setSamsung,
-  setToshiba,
-  setVikass,
   setAboutUsData,
   setContactData,
   setCreditPageData,

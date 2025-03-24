@@ -4,6 +4,7 @@ const initialState = {
   selectedFilters: [],
   slug: '',
   brand: [],
+  ct: [],
   maxPrice: '',
   minPrice: '',
   discount: 0,
@@ -46,6 +47,22 @@ const filterSlice = createSlice({
         state.brand.push(brand);
       }
     },
+    setCt: (state, action) => {
+      const ct = action.payload;
+
+      // Check if the brand is already selected
+      const exists = state.ct.some(b => b?.id === ct?.id);
+
+      if (exists) {
+        // Remove the brand if it's already in the state
+        state.ct = state.ct.filter(c => c?.id !== ct?.id);
+      } else if (ct === null || ct === undefined) {
+        state.ct = [];
+      } else {
+        // Add the brand to the state
+        state.ct.push(ct);
+      }
+    },
     setSortBy: (state, {payload}) => {
       state.sort_by = payload;
     },
@@ -60,6 +77,7 @@ const filterSlice = createSlice({
       state.minPrice = '';
       state.discount = 0;
       state.sort_by = '';
+      state.ct = [];
     },
   },
 });
@@ -72,6 +90,7 @@ export const {
   setMaxPrice,
   setDiscount,
   setBrand,
+  setCt,
   setSortBy,
   setDeviceId,
 } = filterSlice.actions;

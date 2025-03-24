@@ -1,6 +1,5 @@
 import {Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
 import React, {useEffect} from 'react';
-import {getAllBrands, getBrandCategories} from '@store/MainSlice';
 import {useDispatch, useSelector} from 'react-redux';
 import Header from '@components/InnerHeader';
 import Image from '@components/Image';
@@ -8,32 +7,33 @@ import {RH, RW, font} from '@theme/utils';
 import {useNavigation} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {getBrandsRequest} from '@screens/Home/components/SearchInputNew/request/getBrandsSlice';
+import {getBrandRequest} from '@screens/Home/components/SearchInputNew/request/getBrandSlice';
+import {getAllBrandsRequest} from '@store/getAllBrandsSlice';
 
 const Brands = () => {
-  const allBrands = useSelector(({main}) => main.allBrands);
+  const {allBrands} = useSelector(({getAllBrandsSlice}) => getAllBrandsSlice);
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const {t} = useTranslation();
 
   useEffect(() => {
-    dispatch(getAllBrands());
-  }, []);
+    dispatch(getAllBrandsRequest());
+  }, [dispatch]);
 
-  const {t} = useTranslation();
   return (
-    <View style={{flex: 1, paddingTop: insets.top}}>
+    <View style={[styles.container, {paddingTop: insets.top}]}>
       <Header title={t('brands')} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainerStyle}>
-        {allBrands.map((item, index) => (
+        {allBrands?.map((item, index) => (
           <Pressable
             style={styles.btn}
             key={index}
             onPress={() => {
-              dispatch(getBrandsRequest({brand: item.slug}))
+              dispatch(getBrandRequest({brand: item.slug}))
                 .unwrap()
                 .then(res => {
                   navigation.navigate('BrandCategoriesPage');
@@ -53,6 +53,9 @@ const Brands = () => {
 export default Brands;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   contentContainerStyle: {
     alignItems: 'center',
     gap: RW(15),

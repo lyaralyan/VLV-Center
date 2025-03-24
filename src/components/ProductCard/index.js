@@ -268,7 +268,7 @@ const ProductCard = ({
         onPress={() => {
           if (!smallProduct) {
             navigation.navigate('ProductPage', {
-              productId: product.id,
+              productId: prod?.seller_id ?? product?.id,
             });
           }
         }}
@@ -380,14 +380,12 @@ const ProductCard = ({
             }}
             onPress={async () => {
               if (!smallProduct) {
-                console.log('📢 [index.js:383]', prod, '');
                 dispatch(
                   addCartProduct(
-                    prod?.seller_product_skus ||
-                      prod?.skus?.[0]?.id ||
-                      prod.id,
+                    prod?.seller_product_skus || prod?.skus?.[0]?.id || prod.id,
                   ),
                 );
+
                 dispatch(addCartCount());
                 dispatch(
                   addCardStore({

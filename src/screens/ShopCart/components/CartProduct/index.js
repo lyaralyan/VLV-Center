@@ -26,20 +26,21 @@ import useProductPrice from '@helpers/useProductPrice';
 import FastImage from 'react-native-fast-image';
 
 const CartProduct = ({product}) => {
-  const [count, setCount] = useState(product?.qty || 1);
-  const [installingCount, setInstallingCount] = useState(
-    product?.installing_count || 0,
-  );
-  const [withInstalling, setWithInstalling] = useState(!!product?.installing);
-  const {currentLanguage, currentCurrency} = useSelector(({main}) => main);
-  const {totalPrice, discountTotalPrice, cartCount} = useSelector(
-    ({cart}) => cart,
-  );
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const {t} = useTranslation();
   const isFocused = useIsFocused();
   const calculatePrice = useProductPrice();
+  const [count, setCount] = useState(product?.qty || 1);
+  const [installingCount, setInstallingCount] = useState(
+    product?.installing_count || 0,
+  );
+  console.log('📢 [index.js:33]', product, 'product');
+  const [withInstalling, setWithInstalling] = useState(!!product?.installing);
+  const {currentLanguage, currentCurrency} = useSelector(({main}) => main);
+  const {totalPrice, discountTotalPrice, cartCount} = useSelector(
+    ({cart}) => cart,
+  );
 
   useEffect(() => {
     if (isFocused && typeof product !== 'object') {
@@ -62,6 +63,7 @@ const CartProduct = ({product}) => {
     promoPrice,
   });
 
+  console.log('📢 [index.js:64]', finalPrice, 'finalPrice');
   const discount = promoPrice - finalPrice;
 
   // Handle delete press
@@ -98,9 +100,6 @@ const CartProduct = ({product}) => {
       setInstallingCount(newCount);
     }
   };
-
-  const price =
-    product?.seller_product?.pricing ?? product?.seller_product?.skus?.[0];
 
   return (
     <Row style={styles.container}>

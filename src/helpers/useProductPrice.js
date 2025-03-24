@@ -1,7 +1,7 @@
 import {useSelector} from 'react-redux';
 
 const useProductPrice = () => {
-  const mobileDisscounts = useSelector(({main}) => main.mobileDisscounts);
+  const mobileDiscounts = useSelector(({main}) => main.mobileDisscounts);
 
   const calculatePrice = ({
     product_id,
@@ -11,17 +11,17 @@ const useProductPrice = () => {
     promoPrice,
   }) => {
     let discount = false;
-    let discount_type = mobileDisscounts?.discount_type || 0; // Լռելյայն արժեք
-    let discountPrice = mobileDisscounts?.discount || 0; // Լռելյայն արժեք
+    let discount_type = mobileDiscounts?.discount_type || 0; // Լռելյայն արժեք
+    let discountPrice = mobileDiscounts?.discount || 0; // Լռելյայն արժեք
 
-    if (mobileDisscounts?.status) {
+    if (mobileDiscounts?.status) {
       // Ստուգեք brand-ի զեղչերը
       for (const each_category_id of Object.keys(
-        mobileDisscounts?.brands_without_exceptions_discount || {},
+        mobileDiscounts?.brands_without_exceptions_discount || {},
       )) {
         if (each_category_id == category_id) {
           const brandDiscounts =
-            mobileDisscounts?.brands_without_exceptions_discount?.[
+            mobileDiscounts?.brands_without_exceptions_discount?.[
               each_category_id
             ] || {};
           if (brandDiscounts[brand_id]) {
@@ -37,11 +37,11 @@ const useProductPrice = () => {
       // Ստուգեք category-ի զեղչերը
       if (!discount) {
         for (const each_brand_id of Object.keys(
-          mobileDisscounts?.categories_without_exceptions_discount || {},
+          mobileDiscounts?.categories_without_exceptions_discount || {},
         )) {
           if (each_brand_id == brand_id) {
             const categoryDiscounts =
-              mobileDisscounts?.categories_without_exceptions_discount?.[
+              mobileDiscounts?.categories_without_exceptions_discount?.[
                 each_brand_id
               ] || {};
             if (categoryDiscounts[category_id]) {
@@ -58,13 +58,13 @@ const useProductPrice = () => {
       // Ստուգեք exception-ներով զեղչերը (categories)
       if (!discount) {
         for (const each_category_id of Object.keys(
-          mobileDisscounts?.categories_with_exceptions_discount || {},
+          mobileDiscounts?.categories_with_exceptions_discount || {},
         )) {
           if (each_category_id == category_id) {
-            const exceptCategories = mobileDisscounts?.except_categories || {};
+            const exceptCategories = mobileDiscounts?.except_categories || {};
             if (!exceptCategories[category_id]?.includes(brand_id)) {
               const item =
-                mobileDisscounts?.categories_with_exceptions_discount[
+                mobileDiscounts?.categories_with_exceptions_discount[
                   each_category_id
                 ];
               discount_type = item?.discount_type || 0;
@@ -79,13 +79,13 @@ const useProductPrice = () => {
       // Ստուգեք exception-ներով զեղչերը (brands)
       if (!discount) {
         for (const each_brand_id of Object.keys(
-          mobileDisscounts?.brands_with_exceptions_discount || {},
+          mobileDiscounts?.brands_with_exceptions_discount || {},
         )) {
           if (each_brand_id == brand_id) {
-            const exceptBrands = mobileDisscounts?.except_brands || {};
+            const exceptBrands = mobileDiscounts?.except_brands || {};
             if (!exceptBrands[brand_id]?.includes(category_id)) {
               const item =
-                mobileDisscounts?.brands_with_exceptions_discount[
+                mobileDiscounts?.brands_with_exceptions_discount[
                   each_brand_id
                 ];
               discount_type = item?.discount_type || 0;
@@ -100,10 +100,10 @@ const useProductPrice = () => {
       // Ստուգեք product-ի զեղչերը
       if (!discount) {
         const exceptProductIds = JSON.parse(
-          `[${mobileDisscounts?.except_product_ids || ''}]`,
+          `[${mobileDiscounts?.except_product_ids || ''}]`,
         );
         if (!exceptProductIds.includes(product_id)) {
-          const productDiscounts = mobileDisscounts?.products_discount || {};
+          const productDiscounts = mobileDiscounts?.products_discount || {};
           if (productDiscounts[product_id]) {
             const product = productDiscounts[product_id];
             discount_type = product?.discount_type || 0;

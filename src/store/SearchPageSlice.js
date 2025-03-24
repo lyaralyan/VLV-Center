@@ -13,7 +13,6 @@ import Toast from 'react-native-toast-message';
 
 const initialState = {
   sliders: [],
-  featureCategories: [],
   products: [],
   categoryName: null,
   showDrawerFilter: false,
@@ -72,12 +71,6 @@ export const searchSlice = createSlice({
       return {
         ...store,
         products: action.payload,
-      };
-    },
-    setFeatureCategories: (store, action) => {
-      return {
-        ...store,
-        featureCategories: action.payload,
       };
     },
     setSliders: (store, action) => {
@@ -736,7 +729,6 @@ export const {
   setSearchPageData,
   setProducts,
   setSliders,
-  setFeatureCategories,
   setCategoryName,
   setShowDrawerFilter,
   setSortType,

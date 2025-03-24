@@ -5,8 +5,8 @@ import {STORAGE_URL} from '@env';
 import {RW, font} from '../../../../theme/utils';
 import {useNavigation} from '@react-navigation/native';
 import Image from '@components/Image';
-import {getBrandPageData} from '@store/MainSlice';
 import {useDispatch} from 'react-redux';
+import {getBrandPageDataRequest} from '@store/getBrandPageDataSlice';
 
 const capitalizeFirstLetter = word => {
   let withoutFirst = word.slice(1, word.length);
@@ -21,7 +21,7 @@ const HaedaerCategoryItem = ({icon, logo, name, active = false, slug}) => {
       style={[styles.container, active && {width: 'auto', padding: RW(15)}]}
       onPress={() => {
         if (!icon) {
-          dispatch(getBrandPageData(slug));
+          dispatch(getBrandPageDataRequest(slug));
 
           navigation.navigate(capitalizeFirstLetter(slug));
         } else {

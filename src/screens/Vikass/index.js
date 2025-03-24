@@ -19,24 +19,27 @@ import Image from '@components/Image';
 import GridProducts from '../../components/GridProducts/index';
 import Row from '@theme/wrappers/row';
 import {useNavigation} from '@react-navigation/native';
-import {getBrandPageData} from '@store/MainSlice';
 import Colors from '@theme/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {getCategoryWithSlugRequest} from '@screens/Home/components/SearchInputNew/request/getCategoryWithSlugSlice';
 import {setBrand} from '@screens/Home/components/SearchInputNew/request/filterSlice';
+import {getBrandPageDataRequest} from '@store/getBrandPageDataSlice';
 
 const screenWidth = Dimensions.get('screen').width;
 
 const Vikass = () => {
-  const [activeId, setActiveId] = useState();
-  const {vikass, currentLanguage} = useSelector(({main}) => main);
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const [activeId, setActiveId] = useState();
+  const {currentLanguage} = useSelector(({main}) => main);
+  const {vikass} = useSelector(
+    ({getBrandPageDataSlice}) => getBrandPageDataSlice,
+  );
 
   useEffect(() => {
     if (!Object.keys(vikass || {}).length) {
-      dispatch(getBrandPageData('vikass'));
+      dispatch(getBrandPageDataRequest('vikass'));
     }
     setActiveId(vikass?.categories3?.[0]?.id);
   }, [dispatch, vikass]);
@@ -98,7 +101,7 @@ const Vikass = () => {
       />
       <View style={styles.wrapper}>
         <View style={styles.categoriesContainer}>
-          {vikass?.categories2.map((item, index) => (
+          {vikass?.categories2?.map((item, index) => (
             <Pressable
               style={styles.category}
               key={index}
@@ -142,7 +145,7 @@ const Vikass = () => {
       />
       <GridProducts
         products={{
-          products: vikass.products_slider.filter(
+          products: vikass?.products_slider?.filter(
             item => item.product.categories[0].id === activeId,
           ),
         }}

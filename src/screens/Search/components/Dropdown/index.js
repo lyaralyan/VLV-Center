@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Row from '@theme/wrappers/row';
@@ -13,6 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import {
   setBrand,
+  setCt,
   setSelectedFilters,
   setSortBy,
 } from '@screens/Home/components/SearchInputNew/request/filterSlice';
@@ -26,12 +28,13 @@ const Dropdown = ({
   multiSelect = false,
   opened = false,
   isBrand = false,
+  isCategory = false,
 }) => {
   const [open, setOpen] = useState(opened);
   const currentLanguage = useSelector(({main}) => main.currentLanguage);
   const dropdownAnimation = useSharedValue(0);
   const dispatch = useDispatch();
-  const {selectedFilters, brand, sort_by} = useSelector(
+  const {selectedFilters, brand, sort_by, ct} = useSelector(
     ({filterSlice}) => filterSlice,
   );
 
@@ -79,6 +82,10 @@ const Dropdown = ({
       const brandExists = brand.some(b => b?.id === item?.id);
       return brandExists;
     }
+    if (isCategory) {
+      const ctExists = ct.some(c => c?.id === item?.id);
+      return ctExists;
+    }
 
     /**
      * Check if a filter item is selected
@@ -96,6 +103,9 @@ const Dropdown = ({
 
   const toggleBrandBox = value => {
     dispatch(setBrand(value));
+  };
+  const toggleCtBox = value => {
+    dispatch(setCt(value));
   };
 
   const toggleCheckbox = item => {
@@ -159,6 +169,8 @@ const Dropdown = ({
                     toggleSortBox(item);
                   } else if (isBrand) {
                     toggleBrandBox(item);
+                  } else if (isCategory) {
+                    toggleCtBox(item);
                   } else {
                     toggleCheckbox(item);
                   }
@@ -166,7 +178,6 @@ const Dropdown = ({
                 <Row
                   style={[
                     styles.selectRow,
-                    // eslint-disable-next-line react-native/no-inline-styles
                     item?.color && {
                       justifyContent: 'flex-start',
                       columnGap: RW(15),

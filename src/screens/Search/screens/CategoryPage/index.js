@@ -5,7 +5,6 @@ import BackArrowSvg from '@assets/SVG/BackArrowSvg';
 import {RH, RW, font} from '@theme/utils';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import Filter from '../../components/Filter';
-import GridProducts from '@components/GridProducts';
 import {SvgUri} from 'react-native-svg';
 import {STORAGE_URL} from '@env';
 import Image from '@components/Image';
@@ -13,10 +12,11 @@ import Row from '@theme/wrappers/row';
 import FeatureCategories from '@screens/Home/components/FeatureCategories';
 import Colors from '@theme/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-// import {clearFilterData} from '@screens/Home/components/SearchInputNew/request/getCategoryWithSlugSlice';
 import {clearSearchData} from '@screens/Home/components/SearchInputNew/request/searchSlice';
 import {setMaxPrice, setMinPrice} from '@store/SearchPageSlice';
 import {clearSelectedFilters} from '@screens/Home/components/SearchInputNew/request/filterSlice';
+import GridProducts from '@components/GridProducts';
+import {getCategoryWithSlugRequest} from '@screens/Home/components/SearchInputNew/request/getCategoryWithSlugSlice';
 
 const CategoryPage = () => {
   const currentLanguage = useSelector(({main}) => main.currentLanguage);
@@ -27,6 +27,17 @@ const CategoryPage = () => {
   const {getCategoryWithSlugData} = useSelector(
     ({getCategoryWithSlugSlice}) => getCategoryWithSlugSlice,
   );
+
+  const {
+    selectedFilters,
+    brand,
+    ct,
+    discount,
+    maxPrice,
+    minPrice,
+    sort_by,
+    slug,
+  } = useSelector(({filterSlice}) => filterSlice);
 
   useFocusEffect(
     useCallback(() => {
@@ -111,8 +122,34 @@ const CategoryPage = () => {
         products={{products: getCategoryWithSlugData.products}}
         containerStyle={styles.products}
         limit={20}
+        withLimit={false}
         contentContainerStyle={{paddingBottom: RH(40)}}
-        onPressMoreBtn={() => {}}
+        withPagination={true}
+        totalPages={getCategoryWithSlugData.totalPages}
+        productCount={getCategoryWithSlugData.productCount}
+        onPressMoreBtn={() => {
+          const addTwenty = getCategoryWithSlugData.products.length + 20;
+          const p =
+            getCategoryWithSlugData.productCount > addTwenty
+              ? addTwenty
+              : getCategoryWithSlugData.productCount;
+          dispatch(
+            getCategoryWithSlugRequest({
+              slug:
+                slug ||
+                getCategoryWithSlugData?.category?.slug ||
+                getCategoryWithSlugData?.category_list[0]?.slug,
+              manufacture: selectedFilters,
+              brand,
+              ct,
+              discount,
+              maxPrice,
+              minPrice,
+              p,
+              sort_by,
+            }),
+          );
+        }}
       />
     </ScrollView>
   );

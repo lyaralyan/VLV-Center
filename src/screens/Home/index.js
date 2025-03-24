@@ -18,19 +18,27 @@ import {RH, RW} from '@theme/utils';
 import SearchInput from './components/SearchInputNew/SearchInput';
 
 const Home = () => {
-  const {
-    headerSliders,
-    bestDealProduct,
-    topRatingProduct,
-    bannerSliders,
-    currentLanguage,
-  } = useSelector(({main}) => main);
-
-  const threeInOne = useSelector(({main}) => main.threeInOne);
-  const buyTwoGetOneGift = useSelector(({main}) => main.buyTwoGetOneGift);
-
   const {t} = useTranslation();
   const scrollRef = useRef();
+  const {currentLanguage} = useSelector(({main}) => main);
+  const {headerSlider} = useSelector(
+    ({getHeaderSliderSlice}) => getHeaderSliderSlice,
+  );
+  const {bestDealProduct} = useSelector(
+    ({getBestDealProductSlice}) => getBestDealProductSlice,
+  );
+  const {bannerSliders} = useSelector(
+    ({getBannerSlidersSlice}) => getBannerSlidersSlice,
+  );
+  const {topRatingProduct} = useSelector(
+    ({getTopRatingProductSlice}) => getTopRatingProductSlice,
+  );
+  const {threeInOne} = useSelector(
+    ({getThreeInOneSlice}) => getThreeInOneSlice,
+  );
+
+  const buyTwoGetOneGift = useSelector(({main}) => main.buyTwoGetOneGift);
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView ref={scrollRef}>
@@ -38,7 +46,7 @@ const Home = () => {
         <HeaderCategories />
         <SearchInput />
         <Banners
-          data={headerSliders?.map(item => {
+          data={headerSlider?.map(item => {
             return {
               image: item?.['slider_image_' + currentLanguage],
               navigate: item?.navigate,

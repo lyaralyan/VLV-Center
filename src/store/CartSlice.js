@@ -242,30 +242,15 @@ export const addCardStore =
   (product, is_buy_now = 'no') =>
   async (dispatch, getState) => {
     const userId = await getState().user.userId;
-    console.log(
-      '📢 [CartSlice.js:246]',
-      {
-        installing:
-          product.installing_is_on || !!product?.product?.installing_price,
-        installing_count: +(
-          product.installing_is_on || !!product?.product?.installing_price
-        ),
-        installing_qty: +(
-          product.installing_is_on || !!product?.product?.installing_price
-        ),
-        price:
-          product.price ||
-          product?.promo_price ||
-          product?.skus[0]?.selling_price ||
-          product.pricing.selling_price,
-        qty: product?.qty || 1,
-        product_id:
-          product?.seller_product_sku_id ||
-          product?.skus?.[0]?.id ||
-          product.id,
-      },
-      'product',
+
+    const installing = product?.category?.installation
+      ? product?.category?.installing
+      : 0;
+
+    const installing_count = +(
+      product.installing_is_on || !!product?.pricing?.installing_price
     );
+
     axiosInstance
       .post(
         'https://vlv.am/cart/store',
@@ -277,11 +262,8 @@ export const addCardStore =
           session_id: S_D,
           auth: +!!userId,
           auth_user_id: userId || 0,
-          installing:
-            product.installing_is_on || !!product?.product?.installing_price,
-          installing_count: +(
-            product.installing_is_on || !!product?.product?.installing_price
-          ),
+          installing,
+          installing_count,
           installing_qty: +(
             product.installing_is_on || !!product?.product?.installing_price
           ),
@@ -293,6 +275,7 @@ export const addCardStore =
           qty: product?.qty || 1,
           product_id:
             product?.seller_product_skus ||
+            product?.seller_product_sku_id ||
             product?.skus?.[0]?.id ||
             product.id,
           seller_id: 1,

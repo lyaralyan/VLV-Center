@@ -19,8 +19,10 @@ import {setPending} from '@store/MainSlice';
 import Toast from 'react-native-toast-message';
 import {useTranslation} from 'react-i18next';
 
-const threeInOne = () => {
-  const threeInOne = useSelector(({main}) => main.threeInOne);
+const ThreeInOne = () => {
+  const {threeInOne} = useSelector(
+    ({getThreeInOneSlice}) => getThreeInOneSlice,
+  );
 
   const sequence = [1, 2, 3, 2, 3, 1, 3, 1, 2];
 
@@ -124,7 +126,7 @@ const threeInOne = () => {
   );
 };
 
-export default threeInOne;
+export default ThreeInOne;
 
 const styles = StyleSheet.create({
   container: {

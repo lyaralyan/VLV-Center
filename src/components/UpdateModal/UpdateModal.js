@@ -28,13 +28,9 @@ const UpdateModal = () => {
           latestVersion,
         });
 
-        console.log('Current Version:', currentVersion);
-        console.log('Latest Version:', latestVersion);
-        console.log('Update Needed:', updateNeeded);
-
         if (updateNeeded?.isNeeded) {
           const url = await VersionCheck.getStoreUrl();
-          console.log('Store URL:', url); // ✅ Log the store URL
+
           if (url) {
             setStoreUrl(
               url || (Platform.OS === 'ios' ? APP_STORE_URL : PLAY_STORE_URL),

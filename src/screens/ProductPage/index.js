@@ -173,7 +173,7 @@ export default function ProductPage(props) {
               dispatch(
                 getCategoryWithSlugRequest({
                   brand: [],
-                  slug: getCategoryWithSlugData.category.slug,
+                  slug: getCategoryWithSlugData?.category?.slug,
                   manufacture: [],
                   discount,
                   maxPrice,
@@ -429,7 +429,6 @@ export default function ProductPage(props) {
                 </Text>
                 <Text allowFontScaling={false} style={styles.installingPrice}>
                   {UseCalcPrice(productInfo?.installing_price, currentCurrency)}
-                  asdasd
                 </Text>
               </View>
               <ToggleSwitch value={installingOn} setValue={setInstallingOn} />

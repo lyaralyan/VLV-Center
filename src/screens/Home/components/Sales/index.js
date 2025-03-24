@@ -8,7 +8,7 @@ import {RH, RW, font} from '@theme/utils';
 import {useSelector} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
 export default function Sales() {
-  const sales = useSelector(({main}) => main.sales);
+  const {sales} = useSelector(({getSalesSlice}) => getSalesSlice);
   const navigation = useNavigation();
   const {t} = useTranslation();
 

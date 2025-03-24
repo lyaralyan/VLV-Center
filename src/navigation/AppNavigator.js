@@ -1,5 +1,4 @@
 import React from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
 import {
   Home,
   ShopCart,
@@ -44,19 +43,19 @@ import AgreementInfo from '@screens/ShopCart/components/AgreementInfo';
 import BankTransfer from '@screens/ShopCart/components/BankTransfer';
 import BrandCategoriesPage from '@screens/BrandCategoriesPage';
 import OTP from '@screens/Auth/OTP';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
-const Stack = createStackNavigator();
-
-const screenOptionStyle = {
-  headerShown: false,
-  // gestureEnabled: false,
-};
+const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
   const navTheme = DefaultTheme;
   navTheme.colors.background = '#fff';
   return (
-    <Stack.Navigator screenOptions={screenOptionStyle}>
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        animation: 'ios_from_right',
+      }}>
       <Stack.Screen name={'Home'} component={Home} />
       <Stack.Screen name={'NoInternet'} component={NoInternet} />
       <Stack.Screen name={'ShopCart'} component={ShopCart} />

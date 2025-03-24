@@ -11,19 +11,22 @@ import Image from '@components/Image';
 import GridProducts from '@components/GridProducts';
 import ProductsWithSlide from '@components/ProductsWithSlide';
 import {useTranslation} from 'react-i18next';
-import {getBrandPageData} from '@store/MainSlice';
 import Colors from '@theme/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {getBrandPageDataRequest} from '@store/getBrandPageDataSlice';
 const screenWidth = Dimensions.get('screen').width;
 const Samsung = () => {
-  const {samsung, currentLanguage} = useSelector(({main}) => main);
-  const insets = useSafeAreaInsets();
-
   const {t} = useTranslation();
   const dispatch = useDispatch();
+  const insets = useSafeAreaInsets();
+  const {currentLanguage} = useSelector(({main}) => main);
+  const {samsung} = useSelector(
+    ({getBrandPageDataSlice}) => getBrandPageDataSlice,
+  );
+
   useEffect(() => {
     if (!Object.keys(samsung || {}).length) {
-      dispatch(getBrandPageData('samsung'));
+      dispatch(getBrandPageDataRequest('samsung'));
     }
   }, [dispatch, samsung]);
 

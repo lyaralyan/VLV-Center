@@ -4,15 +4,15 @@ import Header from '@components/InnerHeader';
 import {useTranslation} from 'react-i18next';
 import {FlatList, ScrollView} from 'react-native-gesture-handler';
 import {useDispatch, useSelector} from 'react-redux';
-import {getSales} from '@store/MainSlice';
 import Colors from '@theme/colors';
 import {RH, RW, font} from '@theme/utils';
 import SaleItem from '@screens/Home/components/Sales/components/SaleItem';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {getSalesRequest} from '@store/getSalesSlice';
 
 const Sales = () => {
   const [showedSales, setShowedSales] = useState(8);
-  const sales = useSelector(({main}) => main.sales);
+  const {sales} = useSelector(({getSalesSlice}) => getSalesSlice);
 
   const dispatch = useDispatch();
   const {t} = useTranslation();
@@ -20,7 +20,7 @@ const Sales = () => {
 
   useEffect(() => {
     if (!Object.keys(sales || {}).length) {
-      dispatch(getSales());
+      dispatch(getSalesRequest());
     }
   }, [dispatch, sales]);
 

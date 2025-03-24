@@ -38,7 +38,7 @@ import {
   clearFilterData,
   getCategoryWithSlugRequest,
 } from '@screens/Home/components/SearchInputNew/request/getCategoryWithSlugSlice';
-import {getBrandsRequest} from '@screens/Home/components/SearchInputNew/request/getBrandsSlice';
+import {getBrandRequest} from '@screens/Home/components/SearchInputNew/request/getBrandSlice';
 import {
   clearSearchData,
   searchRequest,
@@ -60,7 +60,7 @@ const DrawerFilter = () => {
     ({searchSlice}) => searchSlice,
   );
 
-  const {selectedFilters, brand, discount, maxPrice, minPrice, sort_by} =
+  const {selectedFilters, brand, ct, discount, maxPrice, minPrice, sort_by} =
     useSelector(({filterSlice}) => filterSlice);
   const {getCategoryWithSlugData} = useSelector(
     ({getCategoryWithSlugSlice}) => getCategoryWithSlugSlice,
@@ -122,6 +122,7 @@ const DrawerFilter = () => {
               getCategoryWithSlugData?.category_list[0]?.slug,
             manufacture: selectedFilters,
             brand,
+            ct,
             discount,
             maxPrice,
             minPrice,
@@ -129,6 +130,7 @@ const DrawerFilter = () => {
             sort_by,
           }),
         );
+
         return;
       } // Skip if search is empty
 
@@ -172,7 +174,7 @@ const DrawerFilter = () => {
           productId: result?.product_id,
         });
       } else if (result?.brand?.id && !result?.category?.name_hy) {
-        dispatch(getBrandsRequest({brand: result?.brand?.slug}))
+        dispatch(getBrandRequest({brand: result?.brand?.slug}))
           .unwrap()
           .then(res => {
             navigation.navigate('BrandCategoriesPage');
@@ -180,7 +182,6 @@ const DrawerFilter = () => {
       } else if (Object?.keys(result?.category)?.length > 0) {
         const firstCategory = result.category;
         dispatch(setBrand(result?.brand));
-
         if (firstCategory.slug) {
           dispatch(
             getCategoryWithSlugRequest({
@@ -205,6 +206,7 @@ const DrawerFilter = () => {
     },
     [
       brand,
+      ct,
       discount,
       dispatch,
       getCategoryWithSlugData?.category?.slug,
@@ -269,7 +271,7 @@ const DrawerFilter = () => {
                   title={t('Category')}
                   currentData={getCategoryWithSlugData?.category_list}
                   multiSelect
-                  category={true}
+                  isCategory={true}
                   opened={showDrawerFilter === 'categories'}
                 />
               )}

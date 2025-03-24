@@ -82,8 +82,9 @@ const LangCurrency = () => {
           if (buttonIndex === 0) {
             // cancel action
           } else {
-            if (!currencyData[buttonIndex - 1]?.convert_rate)
+            if (!currencyData[buttonIndex - 1]?.convert_rate) {
               dispatch(getConvertRate(currencyData[buttonIndex - 1].id));
+            }
             dispatch(setCurrentCurrency(currencyData[buttonIndex - 1]));
           }
         },

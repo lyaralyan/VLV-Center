@@ -4,20 +4,20 @@ import {useDispatch, useSelector} from 'react-redux';
 import {font, RW, RH} from '@theme/utils';
 import Row from '@theme/wrappers/row';
 import {useTranslation} from 'react-i18next';
-import {getBrands} from '../../../../store/MainSlice';
 import Image from '@components/Image';
 import {useNavigation} from '@react-navigation/native';
-import {getBrandsRequest} from '../SearchInputNew/request/getBrandsSlice';
+import {getBrandRequest} from '../SearchInputNew/request/getBrandSlice';
+import {getBrandsRequest} from '@store/getBrandsSlice';
 
 const Brands = ({data}) => {
-  const brands = useSelector(({main}) => main.brands);
+  const {brands} = useSelector(({getBrandsSlice}) => getBrandsSlice);
   const {t} = useTranslation();
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
   useEffect(() => {
     if (!brands?.length) {
-      dispatch(getBrands());
+      dispatch(getBrandsRequest());
     }
   }, [brands?.length, dispatch]);
 
@@ -43,7 +43,7 @@ const Brands = ({data}) => {
               key={index}
               style={styles.brandBtn}
               onPress={() => {
-                dispatch(getBrandsRequest({brand: item.slug}))
+                dispatch(getBrandRequest({brand: item.slug}))
                   .unwrap()
                   .then(res => {
                     navigation.navigate('BrandCategoriesPage');

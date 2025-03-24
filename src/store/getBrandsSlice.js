@@ -1,20 +1,27 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
-import {Http} from '../../../../../../http';
-
+import {Http} from '../../http';
+import {LOGIN, PASSWORD, TOKEN} from '@env';
+import {getUniqueId} from 'react-native-device-info';
 const initialState = {
   getBrandsLoader: false,
-  getBrandsData: {
-    brand_categories: [],
-    brand_info: {id: Number()},
-    brand_page_slider: [],
-  },
+  brands: [],
 };
 
 export const getBrandsRequest = createAsyncThunk(
   'getBrands/getBrandsRequest',
-  async ({brand}, {rejectWithValue}) => {
+  async (_, {rejectWithValue}) => {
     try {
-      const response = await Http.post(`brand/categories/${brand}`);
+      const response = await Http.post(
+        `brand?Device-ID=${getUniqueId()}`,
+        undefined,
+        {
+          'Device-ID': getUniqueId(),
+          login: LOGIN,
+          password: PASSWORD,
+          token: TOKEN,
+        },
+      );
+
       return response;
     } catch (error) {
       return rejectWithValue({
@@ -35,7 +42,7 @@ const getBrandsSlice = createSlice({
       })
       .addCase(getBrandsRequest.fulfilled, (state, {payload}) => {
         state.getBrandsLoader = false;
-        state.getBrandsData = payload;
+        state.brands = payload?.Brand;
       })
       .addCase(getBrandsRequest.rejected, state => {
         state.getBrandsLoader = false;

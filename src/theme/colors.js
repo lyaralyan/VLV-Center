@@ -6,5 +6,7 @@ const Colors = {
   white: '#fff',
   bgGray: '#F7F7FB',
   gray: 'rgba(40, 40, 40, 0.6)',
+  DARK: '#282828',
+  BORDER_COLOR50: '#93939380',
 };
 export default Colors;

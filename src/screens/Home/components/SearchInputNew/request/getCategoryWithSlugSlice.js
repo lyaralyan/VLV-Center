@@ -3,19 +3,7 @@ import {Http} from '../../../../../../http';
 
 const initialState = {
   getCategoryWithSlugLoader: false,
-  getCategoryWithSlugData: {
-    filters: [],
-    products: [],
-    productCount: 0,
-    category: {id: 0, name_hy: '', slug: '', children: []},
-    category_list: [{id: 0, name_hy: '', slug: '', children: []}],
-    totalPages: 0,
-    maxPrice: '',
-    minPrice: '',
-    brandList: [],
-    originalMaxPrice: '',
-    originalMinPrice: '',
-  },
+  getCategoryWithSlugData: {},
 };
 
 export const getCategoryWithSlugRequest = createAsyncThunk(
@@ -24,6 +12,7 @@ export const getCategoryWithSlugRequest = createAsyncThunk(
     {
       slug,
       page,
+      p,
       sort_by,
       discount,
       minPrice,
@@ -34,6 +23,7 @@ export const getCategoryWithSlugRequest = createAsyncThunk(
       searchText,
       search,
       fs,
+      ct,
     },
     {rejectWithValue, getState},
   ) => {
@@ -54,6 +44,9 @@ export const getCategoryWithSlugRequest = createAsyncThunk(
     }
     if (page) {
       payload.page = page;
+    }
+    if (p) {
+      payload.p = p;
     }
     if (sort_by) {
       payload.s = sort_by.value;
@@ -82,6 +75,9 @@ export const getCategoryWithSlugRequest = createAsyncThunk(
     if (brand && brand.length > 0) {
       payload.b = brand.flatMap(b => b.id).join(',');
     }
+    if (ct && ct.length > 0) {
+      payload.ct = ct.flatMap(c => c.id).join(',');
+    }
     payload.session_id = deviceId;
 
     if (concatSelected) {
@@ -98,11 +94,6 @@ export const getCategoryWithSlugRequest = createAsyncThunk(
 
       return response;
     } catch (error) {
-      console.error(
-        '📢 [getCategoryWithSlugSlice.js:102]',
-        error.response.data,
-        'error.response.data',
-      );
       return rejectWithValue({
         error: error.response?.data || 'An error occurred',
       });
@@ -115,19 +106,7 @@ const getCategoryWithSlugSlice = createSlice({
   initialState,
   reducers: {
     clearFilterData: state => {
-      state.getCategoryWithSlugData = {
-        filters: [],
-        products: [],
-        productCount: 0,
-        category: {id: 0, name_hy: '', slug: '', children: []},
-        category_list: [{id: 0, name_hy: '', slug: '', children: []}],
-        totalPages: 0,
-        maxPrice: undefined,
-        minPrice: undefined,
-        brandList: [],
-        originalMaxPrice: '',
-        originalMinPrice: '',
-      };
+      state.getCategoryWithSlugData = {};
     },
   },
   extraReducers: builder => {
@@ -137,32 +116,7 @@ const getCategoryWithSlugSlice = createSlice({
       })
       .addCase(getCategoryWithSlugRequest.fulfilled, (state, {payload}) => {
         state.getCategoryWithSlugLoader = false;
-        const {
-          filters,
-          products,
-          productCount,
-          category,
-          totalPages,
-          maxPrice,
-          minPrice,
-          brandList,
-          category_list,
-          originalMaxPrice,
-          originalMinPrice,
-        } = payload;
-        state.getCategoryWithSlugData = {
-          filters,
-          products,
-          productCount,
-          category,
-          totalPages,
-          maxPrice,
-          minPrice,
-          brandList,
-          category_list,
-          originalMaxPrice,
-          originalMinPrice,
-        };
+        state.getCategoryWithSlugData = payload;
       })
       .addCase(getCategoryWithSlugRequest.rejected, state => {
         state.getCategoryWithSlugLoader = false;

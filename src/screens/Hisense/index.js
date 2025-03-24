@@ -11,26 +11,34 @@ import BrandPageCategories from '@components/BrandPageCategories';
 import Image from '@components/Image';
 import Row from '@theme/wrappers/row';
 import GridProducts from '@components/GridProducts';
-import {getBrandPageData} from '@store/MainSlice';
 import Colors from '@theme/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {getBrandPageDataRequest} from '@store/getBrandPageDataSlice';
 
 const screenWidth = Dimensions.get('screen').width;
 const Hisense = () => {
   const [activeId, setActiveId] = useState();
   const [activeId2, setActiveId2] = useState();
-  const {hisense, currentLanguage} = useSelector(({main}) => main);
   const dispatch = useDispatch();
+  const insets = useSafeAreaInsets();
+  const {currentLanguage} = useSelector(({main}) => main);
+
+  const {hisense} = useSelector(
+    ({getBrandPageDataSlice}) => getBrandPageDataSlice,
+  );
+
   useEffect(() => {
     if (!Object.keys(hisense || {}).length) {
-      dispatch(getBrandPageData('hisense'));
+      dispatch(getBrandPageDataRequest('hisense'));
     }
     setActiveId(hisense?.categories1?.[0]?.id);
     setActiveId2(hisense?.categories4?.[0]?.id);
-  }, [hisense]);
-  const insets = useSafeAreaInsets();
+  }, [dispatch, hisense]);
 
-  if (!Object.keys(hisense || {}).length) return null;
+  if (!Object.keys(hisense || {}).length) {
+    return null;
+  }
+
   return (
     <ScrollView
       style={[styles.container, {paddingTop: insets.top}]}
@@ -64,18 +72,12 @@ const Hisense = () => {
         setActiveId={setActiveId}
         activeId={activeId}
       />
-
       <View style={styles.wrapper}>
-        <Row
-          style={{
-            columnGap: RW(5),
-            justifyContent: 'center',
-            marginBottom: RH(5),
-          }}>
+        <Row style={styles.row}>
           {hisense?.photos
-            ?.filter(prod => prod.category_id == activeId)
+            ?.filter(prod => prod.category_id === activeId)
             .map((item, index) => {
-              if (index == 0) {
+              if (index === 0) {
                 return null;
               }
               return (
@@ -137,7 +139,7 @@ const Hisense = () => {
       />
       <GridProducts
         products={{
-          products: hisense.products_third_slider.filter(
+          products: hisense?.products_third_slider.filter(
             item => item.product.categories[0].id === activeId2,
           ),
         }}
@@ -164,6 +166,11 @@ export default Hisense;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  row: {
+    columnGap: RW(5),
+    justifyContent: 'center',
+    marginBottom: RH(5),
   },
   wrapper: {
     paddingHorizontal: RW(16),

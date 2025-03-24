@@ -22,13 +22,13 @@ export class Http {
     data = null,
     customBaseUrl = null,
   ) {
-    const authToken = await Http.getAuthToken();
+    // const authToken = await Http.getAuthToken();
 
     const instance = axios.create({
       baseURL: customBaseUrl || SERVER_URL, // Use custom URL if provided, else default
       headers: {
         'Content-Type': 'application/json',
-        ...(authToken && {Authorization: `Bearer ${authToken}`}),
+        // ...(authToken && {Authorization: `Bearer ${authToken}`}),
         ...headers,
       },
     });

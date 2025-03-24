@@ -27,6 +27,7 @@ import {setInnerPending} from '@store/MainSlice';
 import {getCategoryWithSlugRequest} from '@screens/Home/components/SearchInputNew/request/getCategoryWithSlugSlice';
 import {
   setBrand,
+  setCt,
   setSelectedFilters,
 } from '@screens/Home/components/SearchInputNew/request/filterSlice';
 
@@ -47,8 +48,16 @@ const Filter = () => {
   const {getCategoryWithSlugData} = useSelector(
     ({getCategoryWithSlugSlice}) => getCategoryWithSlugSlice,
   );
-  const {selectedFilters, brand, discount, maxPrice, minPrice, sort_by, slug} =
-    useSelector(({filterSlice}) => filterSlice);
+  const {
+    selectedFilters,
+    brand,
+    ct,
+    discount,
+    maxPrice,
+    minPrice,
+    sort_by,
+    slug,
+  } = useSelector(({filterSlice}) => filterSlice);
 
   const dispatch = useDispatch();
   const navigation = useNavigation();
@@ -67,6 +76,31 @@ const Filter = () => {
             getCategoryWithSlugData?.category_list[0]?.slug,
           manufacture: selectedFilters,
           brand: brand.filter(b => b.id !== brandToRemove.id), // ✅ Updated brand list
+          ct,
+          discount,
+          maxPrice,
+          minPrice,
+          page: 1,
+          sort_by,
+        }),
+      );
+    },
+    [dispatch, slug, getCategoryWithSlugData?.category?.slug, getCategoryWithSlugData?.category_list, selectedFilters, brand, ct, discount, maxPrice, minPrice, sort_by],
+  );
+  const removeCt = useCallback(
+    ctToRemove => {
+      dispatch(setCt(ctToRemove)); // ✅ Remove ct from Redux
+
+      // ✅ Immediately trigger API call after updating Redux
+      dispatch(
+        getCategoryWithSlugRequest({
+          slug:
+            slug ||
+            getCategoryWithSlugData?.category?.slug ||
+            getCategoryWithSlugData?.category_list[0]?.slug,
+          manufacture: selectedFilters,
+          brand,
+          ct: ct.filter(b => b.id !== ctToRemove.id), // ✅ Updated brand list
           discount,
           maxPrice,
           minPrice,
@@ -76,16 +110,17 @@ const Filter = () => {
       );
     },
     [
-      brand, // ✅ Ensures the correct updated brand list
       dispatch,
+      slug,
+      getCategoryWithSlugData?.category?.slug,
+      getCategoryWithSlugData?.category_list,
+      selectedFilters,
+      brand,
+      ct,
       discount,
       maxPrice,
       minPrice,
-      selectedFilters,
-      slug,
       sort_by,
-      getCategoryWithSlugData?.category?.slug,
-      getCategoryWithSlugData?.category_list,
     ],
   );
 
@@ -128,7 +163,7 @@ const Filter = () => {
     await dispatch(setSelectedFilters(updatedFilters));
   };
 
-  const isFilterSelected = selectedFilters.map(fil => fil.values.length);
+  const isFilterSelected = selectedFilters.map(fil => fil?.values?.length);
 
   return (
     <View>
@@ -344,6 +379,21 @@ const Filter = () => {
               onPress={() => removeBrand(e)}>
               <Text allowFontScaling={false} style={styles.btnText}>
                 {e?.name || ''}
+              </Text>
+
+              <CloseSvg width={RW(10)} color={Colors.red} />
+            </Pressable>
+          ))}
+
+        {Array.isArray(ct) &&
+          ct?.length > 0 &&
+          ct.map((e, index) => (
+            <Pressable
+              key={index}
+              style={styles.btn}
+              onPress={() => removeCt(e)}>
+              <Text allowFontScaling={false} style={styles.btnText}>
+                {e?.['name_' + currentLanguage] || ''}
               </Text>
 
               <CloseSvg width={RW(10)} color={Colors.red} />

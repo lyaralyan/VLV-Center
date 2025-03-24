@@ -6,6 +6,7 @@ import {
   Pressable,
   ScrollView,
   FlatList,
+  Alert,
 } from 'react-native';
 import React, {memo, useEffect, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
@@ -27,7 +28,10 @@ import {useNavigation} from '@react-navigation/native';
 import CloseSvg from '@assets/SVG/CloseSvg';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {getCategoryWithSlugRequest} from '@screens/Home/components/SearchInputNew/request/getCategoryWithSlugSlice';
-import {setSlug} from '@screens/Home/components/SearchInputNew/request/filterSlice';
+import {
+  setCt,
+  setSlug,
+} from '@screens/Home/components/SearchInputNew/request/filterSlice';
 
 const width = Dimensions.get('screen').width;
 const minLengthForBig = 9;
@@ -150,14 +154,27 @@ const Menu = () => {
             <Pressable
               onPress={() => {
                 // dispatch(setPending(true));
+                // TODO: stex petqa taza api grvi esi irany chi
                 if (menuData?.[activeMenu]?.from === 'dynamic') {
+                  const slug = menuData?.[activeMenu]?.item?.slug;
+                  dispatch(setSlug(slug));
+                  console.log('📢 [index.js:165]', slug, 'slug');
                   dispatch(
-                    getDynamicPageInfo({
-                      slug: menuData?.[activeMenu]?.item?.slug,
-                      params: {},
-                      navigation,
+                    getCategoryWithSlugRequest({
+                      brand: [],
+                      slug,
+                      manufacture: [],
+                      discount,
+                      maxPrice,
+                      minPrice,
+                      page: 1,
+                      sort_by,
+                      ct: [],
                     }),
                   );
+
+                  dispatch(setOpenMenu(!openMenu));
+                  navigation.navigate('CategoryPage');
                 } else {
                   dispatch(setSlug(menuData?.[activeMenu]?.item?.slug));
                   dispatch(
@@ -194,16 +211,33 @@ const Menu = () => {
                 : menuData?.[activeMenu]?.item?.sub_categories
               )?.map((item, index) => (
                 <Pressable
-                  onPress={() => {
+                  onPress={async () => {
                     if (menuData?.[activeMenu]?.from === 'dynamic') {
+                      dispatch(setSlug(item.slug));
+                      dispatch(setCt(item));
+
+                      const brandIdsArray = (
+                        menuData[activeMenu]?.item?.brand_ids?.split(',') || []
+                      ).map(e => ({id: e}));
+                      const slug =
+                        menuData?.[activeMenu]?.dynamic_category[index].slug;
+
                       dispatch(
-                        getDynamicPageInfo({
-                          slug: menuData?.[activeMenu]?.item.slug,
-                          params: {},
-                          navigation,
-                          activeCategory: item?.id,
+                        getCategoryWithSlugRequest({
+                          brand: brandIdsArray,
+                          slug,
+                          manufacture: [],
+                          discount,
+                          maxPrice,
+                          minPrice,
+                          page: 1,
+                          sort_by,
+                          ct: item,
                         }),
                       );
+
+                      dispatch(setOpenMenu(!openMenu));
+                      navigation.navigate('CategoryPage');
                     } else {
                       dispatch(setSlug(item.slug));
                       dispatch(

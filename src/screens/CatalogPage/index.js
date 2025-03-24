@@ -16,9 +16,8 @@ import Brands from '@screens/Home/components/Brands';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const CatalogPage = props => {
-  const {headerCategorys, currentLanguage, catalogPageData} = useSelector(
-    ({main}) => main,
-  );
+  const {currentLanguage, catalogPageData} = useSelector(({main}) => main);
+  const {headerCategories} = useSelector(({main}) => main);
   const {t} = useTranslation();
   const dispatch = useDispatch();
   const slug = props.route.params?.slug;
@@ -36,7 +35,7 @@ const CatalogPage = props => {
     <ScrollView style={[styles.container, {paddingTop: insets.top}]}>
       <Header />
       <FlatList
-        data={headerCategorys}
+        data={headerCategories}
         horizontal
         keyExtractor={(item, index) => `key-${index}`}
         showsHorizontalScrollIndicator={false}

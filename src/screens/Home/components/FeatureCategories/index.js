@@ -6,7 +6,10 @@ import {FlatList} from 'react-native-gesture-handler';
 import {RW} from '@theme/utils';
 
 const FeatureCategories = ({data, onPress, style = {}, brand}) => {
-  const {featureCategories, currentLanguage} = useSelector(({main}) => main);
+  const {currentLanguage} = useSelector(({main}) => main);
+  const {featureCategories} = useSelector(
+    ({getFeatureCategoriesSlice}) => getFeatureCategoriesSlice,
+  );
 
   return (
     <FlatList
