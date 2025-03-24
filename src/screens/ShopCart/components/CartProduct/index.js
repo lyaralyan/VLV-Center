@@ -35,7 +35,7 @@ const CartProduct = ({product}) => {
   const [installingCount, setInstallingCount] = useState(
     product?.installing_count || 0,
   );
-  console.log('📢 [index.js:33]', product, 'product');
+
   const [withInstalling, setWithInstalling] = useState(!!product?.installing);
   const {currentLanguage, currentCurrency} = useSelector(({main}) => main);
   const {totalPrice, discountTotalPrice, cartCount} = useSelector(
@@ -54,6 +54,7 @@ const CartProduct = ({product}) => {
     product?.seller_product?.recommended_retail_price ||
     product?.seller_product?.skus?.[0]?.selling_price;
   const selling_price = product?.seller_product?.skus?.[0]?.selling_price;
+  const installing_price = product?.seller_product?.product?.installing_price;
 
   const {finalPrice, appliedDiscount, isDiscountApplied} = calculatePrice({
     product_id: product?.seller_product?.product_id,
@@ -63,7 +64,6 @@ const CartProduct = ({product}) => {
     promoPrice,
   });
 
-  console.log('📢 [index.js:64]', finalPrice, 'finalPrice');
   const discount = promoPrice - finalPrice;
 
   // Handle delete press
@@ -186,7 +186,9 @@ const CartProduct = ({product}) => {
                 )}
               </Text>
             </Row>
-            <ToggleSwitch
+            {/* TODO: jamanakavor pakum enq minchev poxem local */}
+
+            {/* <ToggleSwitch
               value={withInstalling}
               setValue={value => {
                 setWithInstalling(value);
@@ -197,7 +199,18 @@ const CartProduct = ({product}) => {
                   }),
                 );
               }}
-            />
+            /> */}
+            <View
+              style={{
+                alignItems: 'flex-end',
+              }}>
+              <Text style={{color: Colors.red, fontSize: 10}}>
+                Տեղադրումով {product?.installing_count}
+              </Text>
+              <Text style={{color: Colors.red, fontSize: 10}}>
+                Արանց տեղադրման {product.qty - product?.installing_count}
+              </Text>
+            </View>
           </Row>
         )}
 
@@ -229,12 +242,14 @@ const CartProduct = ({product}) => {
                 </Text>
                 <View style={styles.selingPriceLine} />
                 <Text allowFontScaling={false} style={styles.promoPrice}>
-                  {UseCalcPrice(finalPrice, currentCurrency)}
+                  {/* !withInstalling ? finalPrice - installing_price : finalPrice, */}
+                  {UseCalcPrice(finalPrice - installing_price, currentCurrency)}
                 </Text>
               </View>
             ) : (
               <Text allowFontScaling={false} style={styles.price}>
-                {UseCalcPrice(finalPrice, currentCurrency)}
+                {/* !withInstalling ? finalPrice - installing_price : finalPrice, */}
+                {UseCalcPrice(finalPrice - installing_price, currentCurrency)}
               </Text>
             )}
           </View>

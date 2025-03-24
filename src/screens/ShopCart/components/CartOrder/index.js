@@ -310,15 +310,16 @@ const CartOrder = () => {
             return count + product?.qty;
           }, 0) || 1,
         map_address: deliveryToMyAddress ? choosedAdress : address,
-        discount_total: discountTotalPrice || 0,
-        discount: discountTotalPrice || 0,
-        grand_total: totalPrice,
-        sub_total: totalPrice,
+        discount_total: totalDiscountedAmount + totalBonus || 0,
+        discount: totalDiscountedAmount + totalBonus || 0,
+        grand_total: finalTotalPrice,
+        sub_total: finalTotalPrice,
         flat: address2,
         auth: +!!userInfo.userId,
         auth_user_id: userInfo.userId,
         email: email,
         phone: phone,
+        type_mobile: 1,
       };
 
       if (activePaymentType === 23) {
@@ -448,7 +449,6 @@ const CartOrder = () => {
                     }
                   });
               } else {
-                Alert.alert('aparik');
                 dispatch(setPending(false));
                 navigation.navigate('AgreementInfo', {
                   text: e.data.cred_info.credit_info_text,
@@ -894,7 +894,7 @@ const CartOrder = () => {
                 </Text>
                 <Text allowFontScaling={false} style={[styles.boldText]}>
                   {UseCalcPrice(
-                    totalPrice + discountTotalPrice,
+                    totalPrice + totalDiscountedAmount,
                     currentCurrency,
                   )}
                 </Text>

@@ -133,14 +133,14 @@ const Hisense = () => {
         </Text>
       </View>
       <BrandPageCategories
-        data={hisense.categories4}
+        data={hisense?.categories4}
         setActiveId={setActiveId2}
         activeId={activeId2}
       />
       <GridProducts
         products={{
-          products: hisense?.products_third_slider.filter(
-            item => item.product.categories[0].id === activeId2,
+          products: hisense?.products_third_slider?.filter(
+            item => item?.product?.categories[0].id === activeId2,
           ),
         }}
       />

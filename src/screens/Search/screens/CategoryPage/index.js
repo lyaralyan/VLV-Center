@@ -85,7 +85,10 @@ const CategoryPage = () => {
                   />
                 ))}
               <Text allowFontScaling={false} style={styles.subTitle}>
-                {getCategoryWithSlugData?.category?.['name_' + currentLanguage]}
+                {getCategoryWithSlugData?.category?.[
+                  'name_' + currentLanguage
+                ] ||
+                  getCategoryWithSlugData?.pages?.['title_' + currentLanguage]}
               </Text>
             </View>
             {Array.isArray(getCategoryWithSlugData) &&

@@ -352,6 +352,20 @@ export default function ProductPage(props) {
               )}
             </View>
           </Row>
+          {finalPrice && finalPrice < productInfo?.skus[0].selling_price ? (
+            <Text
+              // eslint-disable-next-line react-native/no-inline-styles
+              style={{
+                color: Colors.red,
+                marginTop: 10,
+              }}>
+              {console.log('📢 [index.js:361]', productInfo, 'productInfo')}
+              {t('discount_available', {
+                start: productInfo?.date_discount_li_start,
+                end: productInfo?.date_discount_li_end,
+              })}
+            </Text>
+          ) : null}
         </View>
         <DashedLine
           dashLength={4}

@@ -153,12 +153,10 @@ const Menu = () => {
             />
             <Pressable
               onPress={() => {
-                // dispatch(setPending(true));
-                // TODO: stex petqa taza api grvi esi irany chi
                 if (menuData?.[activeMenu]?.from === 'dynamic') {
                   const slug = menuData?.[activeMenu]?.item?.slug;
                   dispatch(setSlug(slug));
-                  console.log('📢 [index.js:165]', slug, 'slug');
+
                   dispatch(
                     getCategoryWithSlugRequest({
                       brand: [],
@@ -170,6 +168,7 @@ const Menu = () => {
                       page: 1,
                       sort_by,
                       ct: [],
+                      dynamic: true,
                     }),
                   );
 

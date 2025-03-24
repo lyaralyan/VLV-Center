@@ -56,10 +56,17 @@ const ProductCard = ({
     }
   }, [cartProducts, prod?.seller_id]);
 
+  // let promoPrice =
+  //   (prod?.online_price && prod?.online_selling_price) ||
+  //   product?.recommended_retail_price ||
+  //   product?.promo_price;
+
   let promoPrice =
     (prod?.online_price && prod?.online_selling_price) ||
     product?.recommended_retail_price ||
-    product?.promo_price;
+    product?.promo_price ||
+    prod?.pricing?.promo_price;
+
   const {finalPrice, appliedDiscount, isDiscountApplied} = calculatePrice({
     product_id: product?.id,
     category_id: product?.categories?.[0]?.laravel_through_key,

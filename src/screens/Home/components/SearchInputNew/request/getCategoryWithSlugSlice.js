@@ -24,6 +24,7 @@ export const getCategoryWithSlugRequest = createAsyncThunk(
       search,
       fs,
       ct,
+      dynamic = false,
     },
     {rejectWithValue, getState},
   ) => {
@@ -86,7 +87,7 @@ export const getCategoryWithSlugRequest = createAsyncThunk(
 
     try {
       const response = await Http.post(
-        `category/${slug}`,
+        dynamic ? `/page/search/${slug}` : `category/${slug}`,
         undefined,
         payload,
         'https://v1.vlv.am/api/',

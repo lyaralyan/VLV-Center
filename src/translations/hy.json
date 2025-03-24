@@ -2501,7 +2501,7 @@
   "baner_8_ru": "Baner 8 RU",
   "baner_8_hy": "Baner 8 HY",
   "add_page3_info_photos": "Template Page Three Info Photos",
-  "discount_available": "Ակցիան գործում է :star  մինչև :ende",
+  "discount_available": "Ակցիան գործում է {{start}}  մինչև {{end}}",
   "select_attribute_grup": "Ընտրեք ատրիբւտի խումբը",
   "active_product_list": "Ակտիվ ապրանքների ցանկ",
   "new_product_list": "Նոր ապրանքի ցանկ",

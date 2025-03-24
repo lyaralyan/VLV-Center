@@ -2149,7 +2149,7 @@
   "product_not_found": "Product not found",
   "active_product_list": "active product list",
   "new_product_list": "new product list",
-  "discount_available": "The promotion is available from :star  to  :ende",
+  "discount_available": "The promotion is available from {{start}}  to {{end}}",
   "select_attribute_grup": "Select Attribute Grup",
   "not_vos_query": "Nothing was found for your query",
   "porceq_poxel": "Тry to change the request or use our",

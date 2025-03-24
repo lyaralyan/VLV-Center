@@ -135,7 +135,10 @@ const ShopCart = () => {
                 {t('Product')} ({cartCount})
               </Text>
               <Text allowFontScaling={false} style={[styles.boldText]}>
-                {UseCalcPrice(totalPrice, currentCurrency)}
+                {UseCalcPrice(
+                  totalPrice + totalDiscountedAmount,
+                  currentCurrency,
+                )}
               </Text>
             </Row>
             <Row style={styles.textRow}>

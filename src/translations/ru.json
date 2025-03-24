@@ -2468,7 +2468,7 @@
   "baner_8_ru": "Баннер 8 RU",
   "baner_8_hy": "Баннер 8 HY",
   "add_page3_info_photos": "Страница шаблона с тремя информационными фотографиями",
-  "discount_available": "Акция действует с :star  до  :ende",
+  "discount_available": "Акция действует с {{start}}  до  {{end}}",
   "select_attribute_grup": "Выбрать группу аттрибутов",
   "active_product_list": "активный список продуктов",
   "new_product_list": "список новых продуктов",
