@@ -47,22 +47,23 @@ const SearchInput = ({containerStyle = {}}) => {
           navigation.navigate('SearchPage');
         });
     } else if (result.search) {
+      await dispatch(setSlug(result.search));
       dispatch(
         getCategoryWithSlugRequest({
           slug: result.search,
           searchText: value,
           searchInfo: 1,
           search: String(result.search),
-          brand: result.brand?.id ? [result.brand] : undefined,
+          brand: [],
           manufacture: [],
-          maxPrice: undefined,
-          minPrice: undefined,
+          maxPrice: '',
+          minPrice: '',
           page: 1,
-          sort_by: undefined,
+          sort_by: '',
         }),
       )
         .unwrap()
-        .then(res => {
+        .then(() => {
           navigation.navigate('SearchPage');
         });
     } else if (result?.product_id) {

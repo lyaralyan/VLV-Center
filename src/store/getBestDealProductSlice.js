@@ -12,7 +12,7 @@ export const getBestDealProductRequest = createAsyncThunk(
   async (_, {rejectWithValue}) => {
     try {
       const response = await Http.post('best-deal-product', undefined, {
-        'Device-ID': getUniqueId(),
+        'Device-ID': await getUniqueId(),
         login: LOGIN,
         password: PASSWORD,
         token: TOKEN,

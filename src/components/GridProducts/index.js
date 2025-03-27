@@ -30,6 +30,7 @@ export default function GridProducts({
   onPressMoreBtn,
   totalPages,
   productCount,
+  withNum = false,
 }) {
   const {t} = useTranslation();
   const dispatch = useDispatch();
@@ -50,19 +51,38 @@ export default function GridProducts({
   } = useSelector(({filterSlice}) => filterSlice);
 
   const paginationRequest = page => {
-    dispatch(
-      getCategoryWithSlugRequest({
-        slug: slug || getCategoryWithSlugData?.category?.slug,
-        manufacture: selectedFilters,
-        brand,
-        ct,
-        discount,
-        maxPrice,
-        minPrice,
-        page,
-        sort_by,
-      }),
-    );
+    if (withNum) {
+      dispatch(
+        getCategoryWithSlugRequest({
+          slug,
+          manufacture: selectedFilters,
+          brand,
+          ct,
+          discount,
+          maxPrice,
+          minPrice,
+          page,
+          sort_by,
+          searchText: slug,
+          searchInfo: 1,
+          search: String(slug),
+        }),
+      );
+    } else {
+      dispatch(
+        getCategoryWithSlugRequest({
+          slug: slug || getCategoryWithSlugData?.category?.slug,
+          manufacture: selectedFilters,
+          brand,
+          ct,
+          discount,
+          maxPrice,
+          minPrice,
+          page,
+          sort_by,
+        }),
+      );
+    }
   };
 
   let yPos;

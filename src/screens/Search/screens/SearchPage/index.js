@@ -1,9 +1,9 @@
 import {Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
-import React, {useEffect} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import BackArrowSvg from '@assets/SVG/BackArrowSvg';
 import {RH, RW, font} from '@theme/utils';
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import Filter from '../../components/Filter';
 import GridProducts from '@components/GridProducts';
 import {useTranslation} from 'react-i18next';
@@ -12,6 +12,8 @@ import {setInnerPending} from '@store/MainSlice';
 import FeatureCategories from '@screens/Home/components/FeatureCategories';
 import Colors from '@theme/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {getCategoryWithSlugRequest} from '@screens/Home/components/SearchInputNew/request/getCategoryWithSlugSlice';
+import {setIsSearchPage} from '@store/pageSlice';
 
 const SearchPage = props => {
   const dispatch = useDispatch();
@@ -24,9 +26,22 @@ const SearchPage = props => {
     ({getCategoryWithSlugSlice}) => getCategoryWithSlugSlice,
   );
 
+  const {slug} = useSelector(({filterSlice}) => filterSlice);
+
   useEffect(() => {
     dispatch(setInnerPending(false));
   }, [dispatch]);
+
+  useFocusEffect(
+    useCallback(() => {
+      console.info('📢 Screen Focused');
+      dispatch(setIsSearchPage(true));
+
+      return () => {
+        dispatch(setIsSearchPage(false));
+      };
+    }, [dispatch]),
+  );
 
   // useEffect(() => {
   //   if (props.route.params?.keyword) {
@@ -78,7 +93,11 @@ const SearchPage = props => {
           {isDynamic ? (
             <View>
               <Text allowFontScaling={false} style={styles.title}>
-                {getCategoryWithSlugData?.pageTitle?.['title_' + currentLanguage]}
+                {
+                  getCategoryWithSlugData?.pageTitle?.[
+                    'title_' + currentLanguage
+                  ]
+                }
               </Text>
             </View>
           ) : (
@@ -110,8 +129,34 @@ const SearchPage = props => {
       <GridProducts
         products={getCategoryWithSlugData}
         containerStyle={styles.products}
-        limit={16}
+        limit={20}
         contentContainerStyle={{paddingBottom: RH(40)}}
+        withPagination={true}
+        withLimit={false}
+        totalPages={getCategoryWithSlugData.totalPages}
+        productCount={getCategoryWithSlugData.productCount}
+        withNum={true}
+        onPressMoreBtn={() => {
+          const addTwenty = getCategoryWithSlugData.products.length + 20;
+          const p =
+            getCategoryWithSlugData.productCount > addTwenty
+              ? addTwenty
+              : getCategoryWithSlugData.productCount;
+          dispatch(
+            getCategoryWithSlugRequest({
+              slug,
+              p,
+              searchText: slug,
+              searchInfo: 1,
+              search: String(slug),
+              brand: [],
+              manufacture: [],
+              maxPrice: '',
+              minPrice: '',
+              sort_by: '',
+            }),
+          );
+        }}
       />
     </ScrollView>
   );
@@ -122,7 +167,7 @@ export default SearchPage;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingBottom: RH(60),
+    marginBottom: RH(60),
   },
   wrapper: {
     paddingHorizontal: RW(16),

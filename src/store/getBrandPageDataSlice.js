@@ -15,7 +15,7 @@ export const getBrandPageDataRequest = createAsyncThunk(
   async (slug, {rejectWithValue}) => {
     try {
       const response = await Http.post(`brand/${slug}`, undefined, {
-        'Device-ID': getUniqueId(),
+        'Device-ID': await getUniqueId(),
         login: LOGIN,
         password: PASSWORD,
         token: TOKEN,

@@ -1,5 +1,6 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import {Http} from '../../../../../../http';
+import {getUniqueId} from 'react-native-device-info';
 
 const initialState = {
   getCategoryWithSlugLoader: false,
@@ -24,6 +25,7 @@ export const getCategoryWithSlugRequest = createAsyncThunk(
       search,
       fs,
       ct,
+      sh,
       dynamic = false,
     },
     {rejectWithValue, getState},
@@ -33,7 +35,7 @@ export const getCategoryWithSlugRequest = createAsyncThunk(
       .flatMap(a => a.values.map(el => `${a.attribute_id}_${el.id}`))
       .join(',');
 
-    const deviceId = getState()?.filterSlice?.deviceId;
+    const deviceId = await getUniqueId();
 
     const state = getState()?.getCategoryWithSlugSlice?.getCategoryWithSlugData;
     const mx = state?.maxPrice;
@@ -48,6 +50,9 @@ export const getCategoryWithSlugRequest = createAsyncThunk(
     }
     if (p) {
       payload.p = p;
+    }
+    if (sh) {
+      payload.sh = sh;
     }
     if (sort_by) {
       payload.s = sort_by.value;
@@ -87,8 +92,12 @@ export const getCategoryWithSlugRequest = createAsyncThunk(
 
     try {
       const response = await Http.post(
-        dynamic ? `/page/search/${slug}` : `category/${slug}`,
-        undefined,
+        dynamic
+          ? `/page/search/${slug}`
+          : `category/${slug}?deviceId=${await getUniqueId()}`,
+        {
+          deviceId: await getUniqueId(),
+        },
         payload,
         'https://v1.vlv.am/api/',
       );

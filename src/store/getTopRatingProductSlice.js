@@ -12,7 +12,7 @@ export const getTopRatingProductRequest = createAsyncThunk(
   async (_, {rejectWithValue}) => {
     try {
       const response = await Http.post('top-rating-product', undefined, {
-        'Device-ID': getUniqueId(),
+        'Device-ID': await getUniqueId(),
         login: LOGIN,
         password: PASSWORD,
         token: TOKEN,

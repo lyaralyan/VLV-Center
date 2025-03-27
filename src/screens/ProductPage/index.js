@@ -42,7 +42,6 @@ import {
   addCompares,
   addFavorites,
   addWishList,
-  getCartPageProducts,
   removeCompares,
   removeFavorites,
   setAddToCartAnimation,
@@ -57,6 +56,7 @@ import useProductPrice from '@helpers/useProductPrice';
 import FastImage from 'react-native-fast-image';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {getCategoryWithSlugRequest} from '@screens/Home/components/SearchInputNew/request/getCategoryWithSlugSlice';
+import {getCartPageProductsRequest} from '@store/getCartPageProductsSlice';
 
 export default function ProductPage(props) {
   const bottomSheetRef = useRef();
@@ -144,7 +144,7 @@ export default function ProductPage(props) {
 
       await dispatch(addCardStore(productInfo, 'yes')).then(() => {
         dispatch(
-          getCartPageProducts(() => {
+          getCartPageProductsRequest(() => {
             navigation.navigate('CartOrder');
           }),
         );
@@ -359,7 +359,6 @@ export default function ProductPage(props) {
                 color: Colors.red,
                 marginTop: 10,
               }}>
-              {console.log('📢 [index.js:361]', productInfo, 'productInfo')}
               {t('discount_available', {
                 start: productInfo?.date_discount_li_start,
                 end: productInfo?.date_discount_li_end,

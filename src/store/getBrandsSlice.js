@@ -15,7 +15,7 @@ export const getBrandsRequest = createAsyncThunk(
         `brand?Device-ID=${getUniqueId()}`,
         undefined,
         {
-          'Device-ID': getUniqueId(),
+          'Device-ID': await getUniqueId(),
           login: LOGIN,
           password: PASSWORD,
           token: TOKEN,

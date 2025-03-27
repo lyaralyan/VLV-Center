@@ -12,7 +12,7 @@ export const getHeaderCategoriesRequest = createAsyncThunk(
   async (_, {rejectWithValue}) => {
     try {
       const response = await Http.post('header-category', undefined, {
-        'Device-ID': getUniqueId(),
+        'Device-ID': await getUniqueId(),
         login: LOGIN,
         password: PASSWORD,
         token: TOKEN,

@@ -12,7 +12,7 @@ export const getSalesRequest = createAsyncThunk(
   async (_, {rejectWithValue}) => {
     try {
       const response = await Http.post('sales', undefined, {
-        'Device-ID': getUniqueId(),
+        'Device-ID': await getUniqueId(),
         login: LOGIN,
         password: PASSWORD,
         token: TOKEN,

@@ -48,6 +48,8 @@ const Filter = () => {
   const {getCategoryWithSlugData} = useSelector(
     ({getCategoryWithSlugSlice}) => getCategoryWithSlugSlice,
   );
+  const {isSearchPage} = useSelector(({pageSlice}) => pageSlice);
+
   const {
     selectedFilters,
     brand,
@@ -66,54 +68,30 @@ const Filter = () => {
   const removeBrand = useCallback(
     brandToRemove => {
       dispatch(setBrand(brandToRemove)); // ✅ Remove brand from Redux
+      const data = {
+        slug: slug || getCategoryWithSlugData?.category?.slug,
+        manufacture: selectedFilters,
+        brand: brand.filter(b => b.id !== brandToRemove.id), // ✅ Updated brand list
+        ct,
+        discount,
+        maxPrice,
+        minPrice,
+        page: 1,
+        sort_by,
+      };
+      if (isSearchPage) {
+        data.sh = 1;
+        data.search = slug;
+        data.searchInfo = 1;
+      }
 
       // ✅ Immediately trigger API call after updating Redux
-      dispatch(
-        getCategoryWithSlugRequest({
-          slug:
-            slug ||
-            getCategoryWithSlugData?.category?.slug ||
-            getCategoryWithSlugData?.category_list[0]?.slug,
-          manufacture: selectedFilters,
-          brand: brand.filter(b => b.id !== brandToRemove.id), // ✅ Updated brand list
-          ct,
-          discount,
-          maxPrice,
-          minPrice,
-          page: 1,
-          sort_by,
-        }),
-      );
-    },
-    [dispatch, slug, getCategoryWithSlugData?.category?.slug, getCategoryWithSlugData?.category_list, selectedFilters, brand, ct, discount, maxPrice, minPrice, sort_by],
-  );
-  const removeCt = useCallback(
-    ctToRemove => {
-      dispatch(setCt(ctToRemove)); // ✅ Remove ct from Redux
-
-      // ✅ Immediately trigger API call after updating Redux
-      dispatch(
-        getCategoryWithSlugRequest({
-          slug:
-            slug ||
-            getCategoryWithSlugData?.category?.slug ||
-            getCategoryWithSlugData?.category_list[0]?.slug,
-          manufacture: selectedFilters,
-          brand,
-          ct: ct.filter(b => b.id !== ctToRemove.id), // ✅ Updated brand list
-          discount,
-          maxPrice,
-          minPrice,
-          page: 1,
-          sort_by,
-        }),
-      );
+      dispatch(getCategoryWithSlugRequest(data));
     },
     [
       dispatch,
       slug,
       getCategoryWithSlugData?.category?.slug,
-      getCategoryWithSlugData?.category_list,
       selectedFilters,
       brand,
       ct,
@@ -121,6 +99,43 @@ const Filter = () => {
       maxPrice,
       minPrice,
       sort_by,
+      isSearchPage,
+    ],
+  );
+  const removeCt = useCallback(
+    ctToRemove => {
+      dispatch(setCt(ctToRemove));
+      const data = {
+        slug: slug || getCategoryWithSlugData?.category?.slug,
+        manufacture: selectedFilters,
+        brand,
+        ct: ct.filter(b => b.id !== ctToRemove.id),
+        discount,
+        maxPrice,
+        minPrice,
+        page: 1,
+        sort_by,
+      };
+      if (isSearchPage) {
+        data.sh = 1;
+        data.search = slug;
+        data.searchInfo = 1;
+      }
+
+      dispatch(getCategoryWithSlugRequest(data));
+    },
+    [
+      dispatch,
+      slug,
+      getCategoryWithSlugData?.category?.slug,
+      selectedFilters,
+      brand,
+      ct,
+      discount,
+      maxPrice,
+      minPrice,
+      sort_by,
+      isSearchPage,
     ],
   );
 
@@ -148,9 +163,7 @@ const Filter = () => {
     // Dispatch updated filters to Redux
     await dispatch(
       getCategoryWithSlugRequest({
-        slug:
-          getCategoryWithSlugData?.category?.slug ||
-          getCategoryWithSlugData?.category_list[0]?.slug,
+        slug: getCategoryWithSlugData?.category?.slug,
         manufacture: updatedFilters,
         brand,
         discount,

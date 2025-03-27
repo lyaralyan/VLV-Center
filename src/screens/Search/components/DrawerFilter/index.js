@@ -8,7 +8,7 @@ import {
   useWindowDimensions,
   Dimensions,
 } from 'react-native';
-import React, {memo, useCallback, useEffect, useState} from 'react';
+import React, {memo, useCallback, useEffect} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {RH, RW, font} from '@theme/utils';
 import Animated, {
@@ -52,16 +52,23 @@ import sort_types from '@screens/Search/data/sort_types';
 const _drawerWith = RW(300);
 
 const DrawerFilter = () => {
-  const [showBackground, setShowBackground] = useState(false);
   const currentLanguage = useSelector(({main}) => main.currentLanguage);
   const {height: screenHeight} = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const {searchValue, showDrawerFilter, salePage} = useSelector(
     ({searchSlice}) => searchSlice,
   );
-
-  const {selectedFilters, brand, ct, discount, maxPrice, minPrice, sort_by} =
-    useSelector(({filterSlice}) => filterSlice);
+  const {isSearchPage} = useSelector(({pageSlice}) => pageSlice);
+  const {
+    selectedFilters,
+    brand,
+    ct,
+    discount,
+    slug,
+    maxPrice,
+    minPrice,
+    sort_by,
+  } = useSelector(({filterSlice}) => filterSlice);
   const {getCategoryWithSlugData} = useSelector(
     ({getCategoryWithSlugSlice}) => getCategoryWithSlugSlice,
   );
@@ -74,62 +81,55 @@ const DrawerFilter = () => {
   const {t} = useTranslation();
 
   useEffect(() => {
-    if (+!!showDrawerFilter * -_drawerWith === drawerAnimation.value) {
-      backgroundAnimation.value = withTiming(+!backgroundAnimation.value, {
-        duration: 100,
-      });
-      drawerAnimation.value = withTiming(+!showDrawerFilter * -_drawerWith, {
-        duration: 100,
-      });
-      if (!showBackground) {
-        setShowBackground(true);
-      } else {
-        setTimeout(() => {
-          setShowBackground(false);
-        }, 100);
-      }
+    if (showDrawerFilter) {
+      backgroundAnimation.value = withTiming(1, {duration: 100});
+      drawerAnimation.value = withTiming(0, {duration: 300});
+    } else {
+      backgroundAnimation.value = withTiming(0, {duration: 100});
+      drawerAnimation.value = withTiming(-_drawerWith, {duration: 300});
     }
-  }, [backgroundAnimation, drawerAnimation, showBackground, showDrawerFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showDrawerFilter]);
 
-  const interpolatedDrawerAnimation = useAnimatedStyle(() => {
-    return {
-      transform: [{translateX: withTiming(drawerAnimation.value)}],
-    };
-  });
+  const interpolatedDrawerAnimation = useAnimatedStyle(() => ({
+    transform: [{translateX: drawerAnimation.value}],
+  }));
 
-  const interpolatedBackgroundAnimation = useAnimatedStyle(() => {
-    return {
-      backgroundColor: interpolateColor(
-        drawerAnimation.value,
-        [-_drawerWith, -0],
-        ['rgba(0,0,0,0)', 'rgba(0,0,0,0.5)'],
-      ),
-    };
-  });
+  const interpolatedBackgroundAnimation = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(
+      backgroundAnimation.value,
+      [0, 1],
+      ['rgba(0,0,0,0)', 'rgba(0,0,0,0.5)'],
+    ),
+  }));
 
   const searchFunc = useCallback(
     async (value, closeFilter) => {
       if (closeFilter) {
         dispatch(setShowDrawerFilter(false));
       }
+
       if (value.trim().length === 0) {
         dispatch(clearSearchData());
+        const data = {
+          slug: getCategoryWithSlugData?.category?.slug,
+          manufacture: selectedFilters,
+          brand,
+          ct,
+          discount,
+          maxPrice,
+          minPrice,
+          page: 1,
+          sort_by,
+        };
 
-        dispatch(
-          getCategoryWithSlugRequest({
-            slug:
-              getCategoryWithSlugData?.category?.slug ||
-              getCategoryWithSlugData?.category_list[0]?.slug,
-            manufacture: selectedFilters,
-            brand,
-            ct,
-            discount,
-            maxPrice,
-            minPrice,
-            page: 1,
-            sort_by,
-          }),
-        );
+        if (isSearchPage) {
+          data.sh = 1;
+          data.search = slug;
+          data.searchInfo = 1;
+        }
+
+        dispatch(getCategoryWithSlugRequest(data));
 
         return;
       } // Skip if search is empty
@@ -210,16 +210,17 @@ const DrawerFilter = () => {
       discount,
       dispatch,
       getCategoryWithSlugData?.category?.slug,
-      getCategoryWithSlugData?.category_list,
+      isSearchPage,
       maxPrice,
       minPrice,
       navigation,
       selectedFilters,
+      slug,
       sort_by,
     ],
   );
 
-  if (!showBackground) {
+  if (!showDrawerFilter) {
     return null;
   }
 

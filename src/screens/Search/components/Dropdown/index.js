@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {Image, Pressable, StyleSheet, Text, View} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Row from '@theme/wrappers/row';
 import ArrowTopSvg from '@screens/Search/assets/ArrowTopSvg';
@@ -200,10 +200,27 @@ const Dropdown = ({
                       )}
                     </View>
                   )}
-                  {isBrand && item?.logo ? (
+                  {console.log(
+                    '📢 [index.js:203]',
+                    item,
+                    '`${STORAGE_URL}${item.logo}`',
+                  )}
+                  {isBrand && item?.logos?.logo?.endsWith('.png') ? (
+                    <Image
+                      source={{uri: `${STORAGE_URL}${item?.logos?.logo}`}}
+                      style={{
+                        width: 70,
+                        height: 30,
+                      }}
+                      resizeMode={'contain'}
+                    />
+                  ) : isBrand && item?.logo?.endsWith('.svg') ? (
                     <SvgUri
                       style={styles.brandLogo}
-                      uri={`${STORAGE_URL}${item.logo}`}
+                      uri={
+                        `${STORAGE_URL}${item.logo}` ||
+                        `${STORAGE_URL}${item.icon}`
+                      }
                     />
                   ) : (
                     <Text allowFontScaling={false} style={styles.selectTitle}>

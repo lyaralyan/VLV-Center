@@ -18,6 +18,8 @@ import getHeaderCategoriesSlice from '@store/getHeaderCategoriesSlice';
 import getThreeInOneSlice from '@store/getThreeInOneSlice';
 import getBrandPageDataSlice from '@store/getBrandPageDataSlice';
 import getAllBrandsSlice from '@store/getAllBrandsSlice';
+import getCartPageProductsSlice from '@store/getCartPageProductsSlice';
+import pageSlice from './pageSlice';
 
 const rootReducer = combineReducers({
   main: mainSlice,
@@ -39,6 +41,8 @@ const rootReducer = combineReducers({
   getThreeInOneSlice,
   getBrandPageDataSlice,
   getAllBrandsSlice,
+  pageSlice,
+  getCartPageProductsSlice,
 });
 
 export const store = configureStore({

@@ -282,7 +282,7 @@
 				CODE_SIGN_ENTITLEMENTS = VLV/VLV.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 40;
+				CURRENT_PROJECT_VERSION = 43;
 				DEVELOPMENT_TEAM = W85FB5G5RT;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = VLV/Info.plist;
@@ -293,7 +293,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 5.0;
+				MARKETING_VERSION = 5.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -317,7 +317,7 @@
 				CODE_SIGN_ENTITLEMENTS = VLV/VLV.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 40;
+				CURRENT_PROJECT_VERSION = 43;
 				DEVELOPMENT_TEAM = W85FB5G5RT;
 				INFOPLIST_FILE = VLV/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "VLV Center";
@@ -327,7 +327,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 5.0;
+				MARKETING_VERSION = 5.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

@@ -138,10 +138,7 @@ const CategoryPage = () => {
               : getCategoryWithSlugData.productCount;
           dispatch(
             getCategoryWithSlugRequest({
-              slug:
-                slug ||
-                getCategoryWithSlugData?.category?.slug ||
-                getCategoryWithSlugData?.category_list[0]?.slug,
+              slug: slug || getCategoryWithSlugData?.category?.slug,
               manufacture: selectedFilters,
               brand,
               ct,
